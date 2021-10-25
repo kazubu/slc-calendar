@@ -18,7 +18,7 @@ class SLC_Calendar_Updater
 
   def authorize
     authorizer = Google::Auth::ServiceAccountCredentials.make_creds(
-      json_key_io: File.open(GOOGLE_CALENDAR_CLIENT_SECRET_PATH),
+      json_key_io: File.open(__dir__ + '/' + GOOGLE_CALENDAR_CLIENT_SECRET_PATH),
       scope: Google::Apis::CalendarV3::AUTH_CALENDAR)
     authorizer.fetch_access_token!
     authorizer
