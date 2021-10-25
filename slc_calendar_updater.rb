@@ -47,6 +47,7 @@ class SLC_Calendar_Updater
   end
 
   def create(ev)
+    return if ev.nil?
     title = "#{ev[:channel_title]}: #{ev[:title]}"
     description = gen_description(ev)
     year,mon,day,hr,min = "#{ev[:date]} #{ev[:time]}".gsub('/', ' ').gsub(':', ' ').split(' ').map{|x| x.to_i }
@@ -81,6 +82,7 @@ class SLC_Calendar_Updater
   end
 
   def update(event_id, ev)
+    return if ev.nil?
     title = "#{ev[:channel_title]}: #{ev[:title]}"
     description = gen_description(ev)
     year,mon,day,hr,min = "#{ev[:date]} #{ev[:time]}".gsub('/', ' ').gsub(':', ' ').split(' ').map{|x| x.to_i }
@@ -136,7 +138,7 @@ class SLC_Calendar_Updater
         update(event_id, ev)
       else
         puts "create"
-        create(event_id)
+        create(ev)
       end
     }
   end

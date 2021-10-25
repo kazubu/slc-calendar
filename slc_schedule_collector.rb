@@ -95,12 +95,12 @@ class SLCScheduleCollector
     return nil
   end
 
-  def is_upcoming_streaming(video_id)
+  def is_upcoming_stream(video_id)
     video_id = vurl_to_vid(video_id)
     v = get_video_detail video_id
 
     if !v.nil? && !v['items'].nil? && !v['items'][0].nil? && v['items'][0]['id'] == video_id
-      if !v['items'][0]['snippet'].nil? && !v['items'][0]['snippet']['liveBroadcastContent'].nil? && v['items'][0]['snippet']['liveBroadcastContent'] == 'upcoming'
+      if !v['items'][0]['snippet'].nil? && !v['items'][0]['snippet']['liveBroadcastContent'].nil? && v['items'][0]['snippet']['liveBroadcastContent'] == 'upcoming' && !v['items'][0]['liveStreamingDetails'].nil? && !v['items'][0]['liveStreamingDetails']['scheduledStartTime'].nil?
         return true, v['items'][0]['liveStreamingDetails']['scheduledStartTime']
       end
     end
@@ -127,7 +127,7 @@ class SLCScheduleCollector
     e_url = expand_url(url).to_s
 
     if e_url.index('watch')
-      res, date = is_upcoming_streaming(e_url)
+      res, date = is_upcoming_stream(e_url)
       if res
         video_url = "https://www.youtube.com/watch?v=#{vurl_to_vid(e_url)}"
         return video_url, Time.parse(date).getlocal("+09:00")
@@ -155,7 +155,7 @@ class SLCScheduleCollector
         last_id = nil
         l = client.list_timeline(twitter_user, list_id, option).each{|x|
           last_id = x.id
-          skip_unless_upstream_live = false
+          skip_unless_upcoming_live = false
           text = NKF.nkf('-w -Z4', x.full_text)
           next if !x.in_reply_to_status_id.nil? # Skip a reply to any tweet
           next if !x.retweeted_status.nil? # Skip RT
@@ -166,11 +166,11 @@ class SLCScheduleCollector
           )
             # pass
           else
-            skip_unless_upstream_live = true
+            skip_unless_upcoming_live = true
           end
 
           live = is_include_youtube_live(x)
-          next if (skip_unless_upstream_live && !live)
+          next if (skip_unless_upcoming_live && !live)
 
           d = { user: x.user.screen_name,
                 uri: x.uri.to_s,
@@ -181,7 +181,6 @@ class SLCScheduleCollector
             announce_lists << d
         }
 
-        p "LC: " + l.count.to_s
         option[:max_id] = last_id
       }
     #end
