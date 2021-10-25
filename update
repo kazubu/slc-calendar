@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require_relative 'slc_calendar_updater.rb'
+
+SLC_Calendar_Updater.new.main()
