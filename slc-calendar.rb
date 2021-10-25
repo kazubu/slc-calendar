@@ -63,6 +63,27 @@ def get_video_title(video_id)
   return nil
 end
 
+def get_channel_title(video_id)
+  video_id = vurl_to_vid(video_id)
+  v = get_video_detail video_id
+
+  if !v.nil? && !v['items'].nil? && !v['items'][0].nil? && !v['items'][0]['snippet'].nil?
+    return v['items'][0]['snippet']['channelTitle']
+  end
+
+  return nil
+end
+
+def get_channel_video_title(video_id)
+  video_id = vurl_to_vid(video_id)
+  v = get_video_detail video_id
+
+  if !v.nil? && !v['items'].nil? && !v['items'][0].nil? && !v['items'][0]['snippet'].nil?
+    return v['items'][0]['snippet']['channelTitle'], v['items'][0]['snippet']['title']
+  end
+
+  return nil
+end
 
 def is_upcoming_streaming(video_id)
   video_id = vurl_to_vid(video_id)
@@ -169,13 +190,30 @@ def announce_parser(announces)
 
   announces.each{|a|
     if a[:live_url]
-      schedules << { user: a[:user], date: a[:live_url][1].strftime('%Y/%m/%d'), time: a[:live_url][1].strftime('%H:%M'), title: get_video_title(a[:live_url][0]), tweet_url: a[:uri], video_url: a[:live_url][0] }
+      channel_title, title = get_channel_video_title(a[:live_ur;][0])
+      schedules << {
+        user: a[:user],
+        date: a[:live_url][1].strftime('%Y/%m/%d'),
+        time: a[:live_url][1].strftime('%H:%M'),
+        channel_title: channel_title,
+        title: title,
+        tweet_url: a[:uri],
+        video_url: a[:live_url][0]
+      }
     else
       t = a[:text]
       date, time = find_schedule_by_tweet(a[:text])
 
       if date
-        schedules << { user: a[:user], date: date, time: time, title: 'Unknown', tweet_url: a[:uri] }
+        schedules << {
+          user: a[:user],
+          date: date,
+          time: time,
+          channel_title: 'Unknown',
+          title: 'Unknown',
+          tweet_url: a[:uri],
+          video_url: 'Unknown'
+        }
       end
     end
   }
@@ -186,5 +224,5 @@ end
 s = announce_parser(collect_announces("Starlight_chann", 1006957219303211008))
 s += announce_parser(collect_announces("Starlight_chann", 1012256204825874433))
 
-pp s
+pp s.to_json
 
