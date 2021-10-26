@@ -151,47 +151,43 @@ class SLCScheduleCollector
     announce_lists = []
 
     #begin
-      (0..4).each{|i|
-        last_id = nil
-        l = client.list_timeline(twitter_user, list_id, option).each{|x|
-          last_id = x.id
-          skip_unless_upcoming_live = false
-          text = NKF.nkf('-w -Z4', x.full_text)
-          next if !x.in_reply_to_status_id.nil? # Skip a reply to any tweet
-          next if !x.retweeted_status.nil? # Skip RT
+    (0..4).each{|i|
+      last_id = nil
+      l = client.list_timeline(twitter_user, list_id, option).each{|x|
+        last_id = x.id
+        skip_unless_upcoming_live = false
+        text = NKF.nkf('-w -Z4', x.full_text)
+        next if !x.in_reply_to_status_id.nil? # Skip a reply to any tweet
+        next if !x.retweeted_status.nil? # Skip RT
 
-          if (
-              text.index('配信') &&
-              (text.index('配信します') || text.index('告知'))
-          )
-            # pass
-          else
-            skip_unless_upcoming_live = true
-          end
+        if (
+            text.index('配信') &&
+            (text.index('配信します') || text.index('告知'))
+        )
+          # pass
+        else
+          skip_unless_upcoming_live = true
+        end
 
-          live = is_include_youtube_live(x)
-          next if (skip_unless_upcoming_live && !live)
+        live = is_include_youtube_live(x)
+        next if (skip_unless_upcoming_live && !live)
 
-          d = { user: x.user.screen_name,
-                uri: x.uri.to_s,
-                text: x.full_text,
-                live_url: live
-              }
-
-            announce_lists << d
+        d = { user: x.user.screen_name,
+              uri: x.uri.to_s,
+              text: x.full_text,
+              live_url: live
         }
 
-        option[:max_id] = last_id
+
+        next if announce_lists.select{|a| a[:live_url] == d[:live_url]}.length > 0 if live
+        announce_lists << d
       }
+
+      option[:max_id] = last_id
+    }
     #end
 
     return announce_lists
-  end
-
-  def find_schedule_by_tweet(text)
-    # not implemented yet
-    return false, false
-    return '2021/12/34', '12:34'
   end
 
   def announce_parser(announces)
@@ -210,20 +206,7 @@ class SLCScheduleCollector
           video_url: a[:live_url][0]
         }
       else
-        t = a[:text]
-        date, time = find_schedule_by_tweet(a[:text])
-
-        if date
-          schedules << {
-            user: a[:user],
-            date: date,
-            time: time,
-            channel_title: 'Unknown',
-            title: 'Unknown',
-            tweet_url: a[:uri],
-            video_url: 'Unknown'
-          }
-        end
+        # 告知っぽいけどYouTube URLがない
       end
     }
 
