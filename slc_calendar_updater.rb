@@ -37,11 +37,12 @@ class SLC_Calendar_Updater
 
   def gen_description(ev)
     ret = ""
-    ret += "Twitter: #{a("https://twitter.com/#{ev[:user]}")}\n" if ev[:user]
     ret += "チャンネル: #{ev[:channel_title]}\n" if ev[:channel_title]
     ret += "タイトル: #{ev[:title]}\n" if ev[:title]
-    ret += "告知ツイート: #{a(ev[:tweet_url])}\n" if ev[:tweet_url]
+    ret += "\n"
     ret += "配信URL: #{a(ev[:video_url])}\n" if ev[:video_url]
+    ret += "\n"
+    ret += "告知ツイート: #{a(ev[:tweet_url])}\n" if ev[:tweet_url]
 
     ret
   end
