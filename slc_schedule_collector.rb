@@ -101,7 +101,7 @@ class SLCScheduleCollector
 
     if !v.nil? && !v['items'].nil? && !v['items'][0].nil? && v['items'][0]['id'] == video_id
       if !v['items'][0]['snippet'].nil? && !v['items'][0]['snippet']['liveBroadcastContent'].nil? && v['items'][0]['snippet']['liveBroadcastContent'] == 'upcoming' && !v['items'][0]['liveStreamingDetails'].nil? && !v['items'][0]['liveStreamingDetails']['scheduledStartTime'].nil?
-        return true, v['items'][0]['liveStreamingDetails']['scheduledStartTime']
+        return true, v['items'][0]['liveStreamingDetails']['scheduledStartTime'], v['items'][0]['snippet']['channelTitle'], v['items'][0]['snippet']['title']
       end
     end
 
@@ -127,10 +127,10 @@ class SLCScheduleCollector
     e_url = expand_url(url).to_s
 
     if e_url.index('watch')
-      res, date = is_upcoming_stream(e_url)
+      res, date, ch_name, title = is_upcoming_stream(e_url)
       if res
         video_url = "https://www.youtube.com/watch?v=#{vurl_to_vid(e_url)}"
-        return video_url, Time.parse(date).getlocal("+09:00")
+        return video_url, Time.parse(date).getlocal("+09:00"), ch_name, title
       end
     end
 
@@ -178,11 +178,10 @@ class SLCScheduleCollector
         d = { user: x.user.screen_name,
               uri: x.uri.to_s,
               text: x.full_text,
-              live_url: live
+              live_info: live
         }
 
-
-        next if announce_lists.select{|a| a[:live_url] == d[:live_url]}.length > 0 if live
+        next if announce_lists.select{|a| a[:live_info] && a[:live_info][0] == d[:live_info][0]}.length > 0 if live
         announce_lists << d
       }
       puts "## Iterate #{i}"
@@ -204,16 +203,15 @@ class SLCScheduleCollector
     schedules = []
 
     announces.each{|a|
-      if a[:live_url]
-        channel_title, title = get_channel_video_title(a[:live_url][0])
+      if a[:live_info]
         schedules << {
           user: a[:user],
-          date: a[:live_url][1].strftime('%Y/%m/%d'),
-          time: a[:live_url][1].strftime('%H:%M'),
-          channel_title: channel_title,
-          title: title,
+          date: a[:live_info][1].strftime('%Y/%m/%d'),
+          time: a[:live_info][1].strftime('%H:%M'),
+          channel_title: a[:live_info][2],
+          title: a[:live_info][3],
           tweet_url: a[:uri],
-          video_url: a[:live_url][0]
+          video_url: a[:live_info][0]
         }
       else
         # 告知っぽいけどYouTube URLがない
