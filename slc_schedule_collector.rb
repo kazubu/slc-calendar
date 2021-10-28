@@ -62,39 +62,6 @@ class SLCScheduleCollector
     return nil
   end
 
-  def get_video_title(video_id)
-    video_id = vurl_to_vid(video_id)
-    v = get_video_detail video_id
-
-    if !v.nil? && !v['items'].nil? && !v['items'][0].nil? && !v['items'][0]['snippet'].nil?
-      return v['items'][0]['snippet']['title']
-    end
-
-    return nil
-  end
-
-  def get_channel_title(video_id)
-    video_id = vurl_to_vid(video_id)
-    v = get_video_detail video_id
-
-    if !v.nil? && !v['items'].nil? && !v['items'][0].nil? && !v['items'][0]['snippet'].nil?
-      return v['items'][0]['snippet']['channelTitle']
-    end
-
-    return nil
-  end
-
-  def get_channel_video_title(video_id)
-    video_id = vurl_to_vid(video_id)
-    v = get_video_detail video_id
-
-    if !v.nil? && !v['items'].nil? && !v['items'][0].nil? && !v['items'][0]['snippet'].nil?
-      return v['items'][0]['snippet']['channelTitle'], v['items'][0]['snippet']['title']
-    end
-
-    return nil
-  end
-
   def is_upcoming_stream(video_id)
     video_id = vurl_to_vid(video_id)
     v = get_video_detail video_id
@@ -146,7 +113,6 @@ class SLCScheduleCollector
 
     # get 20k tweets
     option = {count: 200, tweet_mode: 'extended'}
-
 
     announce_lists = []
 
