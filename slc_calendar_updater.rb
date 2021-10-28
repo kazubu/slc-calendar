@@ -25,33 +25,32 @@ class SLC_Calendar_Updater
   end
 
   def puts_event(event)
-    puts "Summary:  #{event.summary}"
-    puts "ID:       #{event.id}"
-    puts "Start:    #{event.start.date_time}"
-    puts "End:      #{event.end.date_time}"
+    puts "\tSummary:  #{event.summary}"
+    puts "\tID:       #{event.id}"
+    puts "\tStart:    #{event.start.date_time}"
+    puts "\tEnd:      #{event.end.date_time}"
   end
 
   def a(url)
     return "<a href=\"#{url}\"target=\"_blank\">#{url}</a>"
   end
 
-  def gen_description(ev)
+  def gen_description(sc)
     ret = ""
-    ret += "チャンネル: #{ev[:channel_title]}\n" if ev[:channel_title]
-    ret += "タイトル: #{ev[:title]}\n" if ev[:title]
+    ret += "チャンネル: #{sc[:channel_title]}\n" if sc[:channel_title]
+    ret += "タイトル: #{sc[:title]}\n" if sc[:title]
     ret += "\n"
-    ret += "配信URL: #{a(ev[:video_url])}\n" if ev[:video_url]
+    ret += "配信URL: #{a(sc[:video_url])}\n" if sc[:video_url]
     ret += "\n"
-    ret += "告知ツイート: #{a(ev[:tweet_url])}\n" if ev[:tweet_url]
+    ret += "告知ツイート: #{a(sc[:tweet_url])}\n" if sc[:tweet_url]
 
     ret
   end
 
-  def create(ev)
-    return if ev.nil?
-    title = "#{ev[:channel_title]}: #{ev[:title]}"
-    description = gen_description(ev)
-    year,mon,day,hr,min = "#{ev[:date]} #{ev[:time]}".gsub('/', ' ').gsub(':', ' ').split(' ').map{|x| x.to_i }
+  def gen_event(sc)
+    title = "#{sc[:channel_title]}: #{sc[:title]}"
+    description = gen_description(sc)
+    year,mon,day,hr,min = "#{sc[:date]} #{sc[:time]}".gsub('/', ' ').gsub(':', ' ').split(' ').map{|x| x.to_i }
     start_time = DateTime.new(year, mon, day, hr, min, 0, offset="+0900")
 
     event = Google::Apis::CalendarV3::Event.new({
@@ -65,6 +64,13 @@ class SLC_Calendar_Updater
       )
     })
 
+    event
+  end
+
+  def create(sc)
+    return if sc.nil?
+
+    event = gen_event(sc)
     response =  @service.insert_event(
       @calendar_id,
       event
@@ -82,25 +88,10 @@ class SLC_Calendar_Updater
     return events.items
   end
 
-  def update(event_id, ev)
-    return if ev.nil?
-    title = "#{ev[:channel_title]}: #{ev[:title]}"
-    description = gen_description(ev)
-    year,mon,day,hr,min = "#{ev[:date]} #{ev[:time]}".gsub('/', ' ').gsub(':', ' ').split(' ').map{|x| x.to_i }
+  def update(event_id, sc)
+    return if sc.nil?
 
-    start_time = DateTime.new(year, mon, day, hr, min, 0, offset="+0900")
-
-    event = Google::Apis::CalendarV3::Event.new({
-      summary: title,
-      description: description,
-      start: Google::Apis::CalendarV3::EventDateTime.new(
-        date_time: start_time
-      ),
-      end: Google::Apis::CalendarV3::EventDateTime.new(
-        date_time: start_time + Rational(1, 24)
-      )
-    })
-
+    event = gen_event(sc)
     response =  @service.update_event(
       @calendar_id,
       event_id,
@@ -127,19 +118,26 @@ class SLC_Calendar_Updater
 
     current_events = events
 
-    s.each{|ev|
+    s.each{|sc|
       event_id = nil
-      current_events.each{|cev|
-        event_id = cev.id if cev.description.index(ev[:video_url]) if ev[:video_url]
-        event_id = cev.id if cev.description.index(ev[:tweet_url]) if ev[:tweet_url] if event_id.nil?
+      current_events.each{|ev|
+        event_id = ev.id if ev.description.index(sc[:video_url]) if sc[:video_url]
+        event_id = ev.id if ev.description.index(sc[:tweet_url]) if sc[:tweet_url] if event_id.nil?
       }
 
       if event_id
-        puts "update"
-        update(event_id, ev)
+        ev = current_events.select{|x| x.id == event_id}[0]
+        nev = gen_event(sc)
+        if ev.summary == nev.summary && ev.description == nev.description && ev.start.date_time == nev.start.date_time && ev.end.date_time == nev.end.date_time
+          puts "## no update; skip"
+          puts_event(ev)
+        else
+          puts "## update"
+          update(event_id, sc)
+        end
       else
-        puts "create"
-        create(ev)
+        puts "## create"
+        create(sc)
       end
     }
   end
