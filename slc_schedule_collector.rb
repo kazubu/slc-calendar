@@ -150,10 +150,13 @@ class SLCScheduleCollector
 
     announce_lists = []
 
+    tweets_count = 0
+
     #begin
     (0..4).each{|i|
       last_id = nil
-      l = client.list_timeline(twitter_user, list_id, option).each{|x|
+      client.list_timeline(twitter_user, list_id, option).each{|x|
+        tweets_count += 1
         last_id = x.id
         skip_unless_upcoming_live = false
         text = NKF.nkf('-w -Z4', x.full_text)
@@ -182,10 +185,17 @@ class SLCScheduleCollector
         next if announce_lists.select{|a| a[:live_url] == d[:live_url]}.length > 0 if live
         announce_lists << d
       }
+      puts "## Iterate #{i}"
+      puts "Collected tweets: #{tweets_count}"
+      puts "Collected announces: #{announce_lists.length}"
 
       option[:max_id] = last_id
     }
     #end
+
+    puts "## Overall"
+    puts "Collected tweets: #{tweets_count}"
+    puts "Collected announces: #{announce_lists.length}"
 
     return announce_lists
   end
