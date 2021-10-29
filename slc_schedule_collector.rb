@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 require 'twitter'
 require 'pp'
 require 'net/http'
@@ -5,6 +6,7 @@ require 'uri'
 require 'json'
 require 'nkf'
 
+require_relative './slc_utils'
 require_relative './config'
 
 module SLCCalendar
@@ -18,44 +20,11 @@ module SLCCalendar
 
     private
 
-    def retry_on_error(times: 3)
-      try = 0
-      begin
-        try += 1
-        yield
-      rescue
-        retry if try < times
-        raise
-      end
-    end
-
-    def expand_url(url)
-      begin
-        response = Net::HTTP.get_response(URI.parse(url))
-      rescue
-        return url
-      end
-      case response
-      when Net::HTTPRedirection
-        expand_url(response['location'])
-      else
-        url
-      end
-    end
-
-    def vurl_to_vid(url)
-      if url.index('http') == 0
-        return url.split('v=')[1].split('&')[0]
-      else
-        return url
-      end
-    end
-
     def get_video_detail(video_id)
-      video_id = vurl_to_vid(video_id)
+      video_id = Utils.vurl_to_vid(video_id)
       url = "https://www.googleapis.com/youtube/v3/videos?key=#{YOUTUBE_DATA_API_KEY}&part=snippet,liveStreamingDetails&id=#{video_id}"
 
-      retry_on_error {
+      Utils.retry_on_error {
         res = Net::HTTP.get_response(URI.parse(url))
 
         return JSON.parse(res.body)
@@ -64,7 +33,7 @@ module SLCCalendar
     end
 
     def is_upcoming_stream(video_id)
-      video_id = vurl_to_vid(video_id)
+      video_id = Utils.vurl_to_vid(video_id)
       v = get_video_detail video_id
 
       if !v.nil? && !v['items'].nil? && !v['items'][0].nil? && v['items'][0]['id'] == video_id
@@ -92,12 +61,12 @@ module SLCCalendar
 
       return false if url.nil?
 
-      e_url = expand_url(url).to_s
+      e_url = Utils.expand_url(url).to_s
 
       if e_url.index('watch')
         res, date, ch_name, title = is_upcoming_stream(e_url)
         if res
-          video_url = "https://www.youtube.com/watch?v=#{vurl_to_vid(e_url)}"
+          video_url = "https://www.youtube.com/watch?v=#{Utils.vurl_to_vid(e_url)}"
           return video_url, Time.parse(date).getlocal("+09:00"), ch_name, title
         end
       end
