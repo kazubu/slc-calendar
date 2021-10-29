@@ -3,5 +3,5 @@
 require_relative 'slc_calendar_updater.rb'
 
 puts "Process Start: " + Time.now.to_s
-SLCCalendarUpdater.new.main()
+SLCCalendar::CalendarUpdater.new.main()
 puts "Process Finished: " + Time.now.to_s
