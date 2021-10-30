@@ -120,15 +120,10 @@ module SLCCalendar
           next if announce_lists.select{|a| a[:live_info] && a[:live_info][0] == d[:live_info][0]}.length > 0 if live
           announce_lists << d
         }
-        puts "## Iterate #{i}"
-        puts "Collected tweets: #{tweets_count}"
-        puts "Collected announces: #{announce_lists.length}"
-
         option[:max_id] = last_id
       }
       #end
 
-      puts "## Overall"
       puts "Collected tweets: #{tweets_count}"
       puts "Collected announces: #{announce_lists.length}"
 
