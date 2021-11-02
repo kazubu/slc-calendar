@@ -9,6 +9,10 @@ module SLCCalendar
     end
 
     def update_by_tweets
+      create_count = 0
+      update_count = 0
+      skip_count = 0
+
       ssc = SLCCalendar::ScheduleCollector.new
       c = SLCCalendar::Calendar.new
 
@@ -31,23 +35,29 @@ module SLCCalendar
           nev = c.gen_event(sc)
           if ev.summary == nev.summary && ev.description == nev.description && ev.start.date_time == nev.start.date_time && ev.end.date_time == nev.end.date_time
             puts "## no update; skip"
+            skip_count += 1
             c.puts_event(ev)
           else
             puts "## update"
+            update_count += 1
             c.puts_event c.update(event_id, sc)
           end
         else
           puts "## create"
+          create_count += 1
           c.puts_event c.create(sc)
         end
       }
+
+      puts "#{create_count} created; #{update_count} updated; #{skip_count} skipped;"
     end
 
     # 配信URLをチェックして時間だけアップデートする
     def update_registered_events
-      ended_count = 0
-      skip_count = 0
       update_count = 0
+      skip_count = 0
+      ended_count = 0
+
       c = SLCCalendar::Calendar.new
 
       current_events = c.events(2, 120)
@@ -66,17 +76,17 @@ module SLCCalendar
         start_time = detail[1].strftime('%H:%M')
 
         if r = c.update_starttime(e, start_date, start_time)
-          puts '## updated!'
+          puts '## update'
           update_count += 1
           c.puts_event(r)
         else
-          puts '## no update;skipped'
+          puts '## no update; skip'
           skip_count += 1
           c.puts_event(e)
         end
       }
 
-      puts "#{update_count} update; #{skip_count} skipped; #{ended_count} ended;"
+      puts "#{update_count} updated; #{skip_count} skipped; #{ended_count} ended;"
     end
   end
 end
