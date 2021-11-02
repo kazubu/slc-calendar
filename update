@@ -3,5 +3,8 @@
 require_relative 'slc_calendar_updater.rb'
 
 puts "Process Start: " + Time.now.to_s
-SLCCalendar::CalendarUpdater.new.update_by_tweets()
+puts "# Update by tweet"
+SLCCalendar::CalendarUpdater.new.update_by_tweets
+puts "# Update existing schedules"
+SLCCalendar::CalendarUpdater.new.update_registered_events
 puts "Process Finished: " + Time.now.to_s

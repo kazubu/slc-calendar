@@ -55,48 +55,41 @@ module SLCCalendar
         config.bearer_token = TWITTER_BEARER_TOKEN
       end
 
-      # get 20k tweets
-      option = {count: 200, tweet_mode: 'extended'}
-
       announce_lists = []
 
       tweets_count = 0
 
-      #begin
-      (0..4).each{|i|
-        last_id = nil
-        client.list_timeline(twitter_user, list_id, option).each{|x|
-          tweets_count += 1
-          last_id = x.id
-          skip_unless_upcoming_live = false
-          text = NKF.nkf('-w -Z4', x.full_text)
-          next if !x.in_reply_to_status_id.nil? # Skip a reply to any tweet
-          next if !x.retweeted_status.nil? # Skip RT
+      last_id = nil
+      option = {count: 1000, tweet_mode: 'extended'}
+      client.list_timeline(twitter_user, list_id, option).each{|x|
+        tweets_count += 1
+        last_id = x.id
+        skip_unless_upcoming_live = false
+        text = NKF.nkf('-w -Z4', x.full_text)
+        next if !x.in_reply_to_status_id.nil? # Skip a reply to any tweet
+        next if !x.retweeted_status.nil? # Skip RT
 
-          if (
-              text.index('配信') &&
-              (text.index('配信します') || text.index('告知'))
-          )
-            # pass
-          else
-            skip_unless_upcoming_live = true
-          end
+        if (
+            text.index('配信') &&
+            (text.index('配信します') || text.index('告知'))
+        )
+          # pass
+        else
+          skip_unless_upcoming_live = true
+        end
 
-          live = is_include_youtube_live(x)
-          next if (skip_unless_upcoming_live && !live)
+        live = is_include_youtube_live(x)
+        next if (skip_unless_upcoming_live && !live)
 
-          d = { user: x.user.screen_name,
-                uri: x.uri.to_s,
-                text: x.full_text,
-                live_info: live
-          }
-
-          next if announce_lists.select{|a| a[:live_info] && a[:live_info][0] == d[:live_info][0]}.length > 0 if live
-          announce_lists << d
+        d = { user: x.user.screen_name,
+              uri: x.uri.to_s,
+              text: x.full_text,
+              live_info: live
         }
-        option[:max_id] = last_id
+
+        next if announce_lists.select{|a| a[:live_info] && a[:live_info][0] == d[:live_info][0]}.length > 0 if live
+        announce_lists << d
       }
-      #end
 
       puts "Collected tweets: #{tweets_count}"
       puts "Collected announces: #{announce_lists.length}"

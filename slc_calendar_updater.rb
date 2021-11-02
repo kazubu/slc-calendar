@@ -45,6 +45,9 @@ module SLCCalendar
 
     # 配信URLをチェックして時間だけアップデートする
     def update_registered_events
+      ended_count = 0
+      skip_count = 0
+      update_count = 0
       c = SLCCalendar::Calendar.new
 
       current_events = c.events(2, 120)
@@ -55,9 +58,7 @@ module SLCCalendar
 
         detail = Utils.is_upcoming_stream(video_id)
         unless detail
-          puts '## ended'
-          c.puts_event(e)
-
+          ended_count += 1
           next
         end
 
@@ -66,12 +67,16 @@ module SLCCalendar
 
         if r = c.update_starttime(e, start_date, start_time)
           puts '## updated!'
+          update_count += 1
           c.puts_event(r)
         else
           puts '## no update;skipped'
+          skip_count += 1
           c.puts_event(e)
         end
       }
+
+      puts "#{update_count} update; #{skip_count} skipped; #{ended_count} ended;"
     end
   end
 end
