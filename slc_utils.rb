@@ -35,8 +35,21 @@ module SLCCalendar
       end
     end
 
+    def get_youtube_video_detail(video_id)
+      video_id = Utils.vurl_to_vid(video_id)
+      url = "https://www.googleapis.com/youtube/v3/videos?key=#{YOUTUBE_DATA_API_KEY}&part=snippet,liveStreamingDetails&id=#{video_id}"
+
+      Utils.retry_on_error {
+        res = Net::HTTP.get_response(URI.parse(url))
+
+        return JSON.parse(res.body)
+      }
+      return nil
+    end
+
     module_function :retry_on_error
     module_function :expand_url
     module_function :vurl_to_vid
+    module_function :get_youtube_video_detail
   end
 end
