@@ -47,9 +47,24 @@ module SLCCalendar
       return nil
     end
 
+    def is_upcoming_stream(video_id)
+      video_id = Utils.vurl_to_vid(video_id)
+      v = Utils.get_youtube_video_detail video_id
+
+      if !v.nil? && !v['items'].nil? && !v['items'][0].nil? && v['items'][0]['id'] == video_id
+        if !v['items'][0]['snippet'].nil? && !v['items'][0]['snippet']['liveBroadcastContent'].nil? && v['items'][0]['snippet']['liveBroadcastContent'] == 'upcoming' && !v['items'][0]['liveStreamingDetails'].nil? && !v['items'][0]['liveStreamingDetails']['scheduledStartTime'].nil?
+          video_url = "https://www.youtube.com/watch?v=#{video_id}"
+          return video_url, Time.parse(v['items'][0]['liveStreamingDetails']['scheduledStartTime']).getlocal("+09:00"), v['items'][0]['snippet']['channelTitle'], v['items'][0]['snippet']['title']
+        end
+      end
+
+      return false
+    end
+
     module_function :retry_on_error
     module_function :expand_url
     module_function :vurl_to_vid
     module_function :get_youtube_video_detail
+    module_function :is_upcoming_stream
   end
 end

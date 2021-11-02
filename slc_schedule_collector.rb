@@ -20,19 +20,6 @@ module SLCCalendar
 
     private
 
-    def is_upcoming_stream(video_id)
-      video_id = Utils.vurl_to_vid(video_id)
-      v = Utils.get_youtube_video_detail video_id
-
-      if !v.nil? && !v['items'].nil? && !v['items'][0].nil? && v['items'][0]['id'] == video_id
-        if !v['items'][0]['snippet'].nil? && !v['items'][0]['snippet']['liveBroadcastContent'].nil? && v['items'][0]['snippet']['liveBroadcastContent'] == 'upcoming' && !v['items'][0]['liveStreamingDetails'].nil? && !v['items'][0]['liveStreamingDetails']['scheduledStartTime'].nil?
-          return true, v['items'][0]['liveStreamingDetails']['scheduledStartTime'], v['items'][0]['snippet']['channelTitle'], v['items'][0]['snippet']['title']
-        end
-      end
-
-      return false, nil
-    end
-
     def is_include_youtube_live(tweet)
       youtube_url_lists = [ 'youtu.be', 'youtube.com' ]
       url = nil
@@ -52,10 +39,9 @@ module SLCCalendar
       e_url = Utils.expand_url(url).to_s
 
       if e_url.index('watch')
-        res, date, ch_name, title = is_upcoming_stream(e_url)
-        if res
-          video_url = "https://www.youtube.com/watch?v=#{Utils.vurl_to_vid(e_url)}"
-          return video_url, Time.parse(date).getlocal("+09:00"), ch_name, title
+        video_url, date, ch_name, title = Utils.is_upcoming_stream(e_url)
+        if video_url
+          return video_url, date, ch_name, title
         end
       end
 
