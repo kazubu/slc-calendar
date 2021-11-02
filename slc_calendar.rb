@@ -4,6 +4,7 @@ require "google/apis/calendar_v3"
 require "googleauth"
 require "googleauth/stores/file_token_store"
 require "fileutils"
+
 module SLCCalendar
   class Calendar
     def initialize
@@ -23,8 +24,7 @@ module SLCCalendar
     def gen_event(sc)
       title = "#{sc[:channel_title]}: #{sc[:title]}"
       description = gen_description(sc)
-      year,mon,day,hr,min = "#{sc[:date]} #{sc[:time]}".gsub('/', ' ').gsub(':', ' ').split(' ').map{|x| x.to_i }
-      start_time = DateTime.new(year, mon, day, hr, min, 0, offset="+0900")
+      start_time = date2datetime(sc[:date], sc[:time])
 
       event = Google::Apis::CalendarV3::Event.new({
         summary: title,
@@ -59,7 +59,7 @@ module SLCCalendar
         event
       )
 
-      puts_event(response)
+      return response
     end
 
     def update(event_id, sc)
@@ -72,7 +72,28 @@ module SLCCalendar
         event
       )
 
-      puts_event(response)
+      return response
+    end
+
+    # 開始時刻と終了時刻が違っていたらアップデートする
+    def update_starttime(event, start_date, start_time)
+      event_id = event.id
+      s = date2datetime(start_date, start_time)
+      edt_start = Google::Apis::CalendarV3::EventDateTime.new(date_time: s)
+      edt_end = Google::Apis::CalendarV3::EventDateTime.new(date_time: s + Rational(1, 24))
+
+      return false if event.start.date_time == edt_start.date_time && event.end.date_time == edt_end.date_time
+
+      event.start = edt_start
+      event.end = edt_end
+
+      response = @service.update_event(
+        @calendar_id,
+        event_id,
+        event
+      )
+
+      return response
     end
 
     def delete(event_id)
@@ -105,6 +126,14 @@ module SLCCalendar
       ret += "告知ツイート: #{a(sc[:tweet_url])}\n" if sc[:tweet_url]
 
       ret
+    end
+
+    # date: "2021/01/23", time: "12:34" => DateTime
+    def date2datetime(date, time)
+      year,mon,day,hr,min = "#{date} #{time}".gsub('/', ' ').gsub(':', ' ').split(' ').map{|x| x.to_i }
+      dt = DateTime.new(year, mon, day, hr, min, 0, offset="+0900")
+
+      return dt
     end
   end
 end

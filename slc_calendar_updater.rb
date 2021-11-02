@@ -8,7 +8,7 @@ module SLCCalendar
     def initialize
     end
 
-    def main
+    def update_by_tweets
       ssc = SLCCalendar::ScheduleCollector.new
       c = SLCCalendar::Calendar.new
 
@@ -34,11 +34,42 @@ module SLCCalendar
             c.puts_event(ev)
           else
             puts "## update"
-            c.update(event_id, sc)
+            c.puts_event c.update(event_id, sc)
           end
         else
           puts "## create"
-          c.create(sc)
+          c.puts_event c.create(sc)
+        end
+      }
+    end
+
+    # 配信URLをチェックして時間だけアップデートする
+    def update_registered_events
+      c = SLCCalendar::Calendar.new
+
+      current_events = c.events(2, 120)
+
+      current_events.each{|e|
+        next unless e.description.index('/watch?v=')
+        video_id = e.description.split('/watch?v=')[1].split('"')[0]
+
+        detail = Utils.is_upcoming_stream(video_id)
+        unless detail
+          puts '## ended'
+          c.puts_event(e)
+
+          next
+        end
+
+        start_date = detail[1].strftime('%Y/%m/%d')
+        start_time = detail[1].strftime('%H:%M')
+
+        if r = c.update_starttime(e, start_date, start_time)
+          puts '## updated!'
+          c.puts_event(r)
+        else
+          puts '## no update;skipped'
+          c.puts_event(e)
         end
       }
     end
