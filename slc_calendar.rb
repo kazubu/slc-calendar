@@ -40,12 +40,13 @@ module SLCCalendar
       event
     end
 
-    def events
+    def events(past = 30, future = 120)
       events = @service.list_events(@calendar_id,
-                                    time_min: (Time.now - 30*24*60*60).iso8601,
-                                    time_max: (Time.now + 120*24*60*60).iso8601,
+                                    time_min: (Time.now - past * 24 * 60 * 60).iso8601,
+                                    time_max: (Time.now + future * 24 * 60 * 60).iso8601
                                    )
 
+      puts "#{events.items.length} events received"
       return events.items
     end
 
