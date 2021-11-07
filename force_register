@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+require_relative 'slc_calendar_updater.rb'
+
+puts "Process Start: " + Time.now.to_s
+SLCCalendar::CalendarUpdater.new.force_register ARGV[0]
+puts "Process Finished: " + Time.now.to_s

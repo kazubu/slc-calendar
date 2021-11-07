@@ -120,9 +120,9 @@ module SLCCalendar
       ret = ""
       ret += "チャンネル: #{sc[:channel_title]}\n" if sc[:channel_title]
       ret += "タイトル: #{sc[:title]}\n" if sc[:title]
-      ret += "\n"
+      ret += "\n" if sc[:video_url]
       ret += "配信URL: #{a(sc[:video_url])}\n" if sc[:video_url]
-      ret += "\n"
+      ret += "\n" if sc[:tweet_url]
       ret += "告知ツイート: #{a(sc[:tweet_url])}\n" if sc[:tweet_url]
 
       ret

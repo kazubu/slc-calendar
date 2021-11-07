@@ -88,5 +88,32 @@ module SLCCalendar
 
       puts "#{update_count} updated; #{skip_count} skipped; #{ended_count} ended;"
     end
+
+    def force_register(video_id)
+      c = SLCCalendar::Calendar.new
+
+      current_events = c.events(10,30)
+
+      if current_events.find{|x| x.description.index(video_id)}
+        puts 'This video is exists.'
+        return false
+      end
+
+      detail = Utils.is_upcoming_stream(video_id, force: true)
+      unless detail
+        puts 'Invalid video id?'
+        return false
+      end
+
+      sc = {
+        date: detail[1].strftime('%Y/%m/%d'),
+        time: detail[1].strftime('%H:%M'),
+        channel_title: detail[2],
+        title: detail[3],
+        video_url: detail[0]
+      }
+
+      c.puts_event c.create(sc)
+    end
   end
 end
