@@ -39,12 +39,20 @@ module SLCCalendar
       video_id = Utils.vurl_to_vid(video_id)
       url = "https://www.googleapis.com/youtube/v3/videos?key=#{YOUTUBE_DATA_API_KEY}&part=snippet,liveStreamingDetails&id=#{video_id}"
 
+      res = nil
       Utils.retry_on_error {
-        res = Net::HTTP.get_response(URI.parse(url))
-
-        return JSON.parse(res.body)
+        res = JSON.parse(Net::HTTP.get_response(URI.parse(url)).body)
       }
-      return nil
+
+      if res['error']
+        if res ['error']['errors'][0] && res['error']['errors'][0]['reason']
+          raise res['error']['errors'][0]['reason']
+        else
+          raise 'unknown error from YouTube'
+        end
+      end
+
+      return res
     end
 
     def is_upcoming_stream(video_id)
