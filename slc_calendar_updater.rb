@@ -63,11 +63,19 @@ module SLCCalendar
       current_events = c.events(2, 120)
 
       current_events.each{|e|
+        if e.description[-2,2] == '##'
+          ended_count += 1
+          next
+        end
+
         next unless e.description.index('/watch?v=')
         video_id = e.description.split('/watch?v=')[1].split('"')[0]
 
         detail = Utils.is_upcoming_stream(video_id)
         unless detail
+          puts '## marking as ended'
+          e.description += "##\n"
+          c.puts_event c.update_event(e)
           ended_count += 1
           next
         end

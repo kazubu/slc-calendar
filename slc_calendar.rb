@@ -75,6 +75,18 @@ module SLCCalendar
       return response
     end
 
+    def update_event(ev)
+      return if ev.nil?
+
+      response = @service.update_event(
+        @calendar_id,
+        ev.id,
+        ev
+      )
+
+      return response
+    end
+
     # 開始時刻と終了時刻が違っていたらアップデートする
     def update_starttime(event, start_date, start_time)
       event_id = event.id
