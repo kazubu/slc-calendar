@@ -74,7 +74,7 @@ module SLCCalendar
         detail = Utils.is_upcoming_stream(video_id)
         unless detail
           puts '## marking as ended'
-          e.description += "##\n"
+          e.description += "##"
           c.puts_event c.update_event(e)
           ended_count += 1
           next
