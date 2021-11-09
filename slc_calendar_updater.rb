@@ -71,6 +71,11 @@ module SLCCalendar
         next unless e.description.index('/watch?v=')
         video_id = e.description.split('/watch?v=')[1].split('"')[0]
 
+        tweet_url = nil
+        if e.description.index('twitter.com/')
+          tweet_url = 'https://twitter.com/' + e.description.split('twitter.com/')[1].split('"')[0]
+        end
+
         detail = Utils.is_upcoming_stream(video_id)
         unless detail
           puts '## marking as ended'
@@ -80,17 +85,25 @@ module SLCCalendar
           next
         end
 
-        start_date = detail[1].strftime('%Y/%m/%d')
-        start_time = detail[1].strftime('%H:%M')
+        sc = {
+          date: detail[1].strftime('%Y/%m/%d'),
+          time: detail[1].strftime('%H:%M'),
+          channel_title: detail[2],
+          title: detail[3],
+          video_url: detail[0],
+          tweet_url: tweet_url
+        }
 
-        if r = c.update_starttime(e, start_date, start_time)
-          puts '## update'
-          update_count += 1
-          c.puts_event(r)
-        else
-          puts '## no update; skip'
+        nev = c.gen_event(sc)
+
+        if e.summary == nev.summary && e.description == nev.description && e.start.date_time == nev.start.date_time && e.end.date_time == nev.end.date_time
+          puts "## no update; skip"
           skip_count += 1
           c.puts_event(e)
+        else
+          puts "## update"
+          update_count += 1
+          c.puts_event c.update(e.id, sc)
         end
       }
 
