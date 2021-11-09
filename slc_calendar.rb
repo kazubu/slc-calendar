@@ -87,27 +87,6 @@ module SLCCalendar
       return response
     end
 
-    # 開始時刻と終了時刻が違っていたらアップデートする
-    def update_starttime(event, start_date, start_time)
-      event_id = event.id
-      s = date2datetime(start_date, start_time)
-      edt_start = Google::Apis::CalendarV3::EventDateTime.new(date_time: s)
-      edt_end = Google::Apis::CalendarV3::EventDateTime.new(date_time: s + Rational(1, 24))
-
-      return false if event.start.date_time == edt_start.date_time && event.end.date_time == edt_end.date_time
-
-      event.start = edt_start
-      event.end = edt_end
-
-      response = @service.update_event(
-        @calendar_id,
-        event_id,
-        event
-      )
-
-      return response
-    end
-
     def delete(event_id)
       @service.delete_event(
         @calendar_id,
