@@ -4,6 +4,7 @@ TWITTER_CONSUMER_SECRET = ''
 TWITTER_BEARER_TOKEN = ''
 
 TWITTER_LISTS = [ ["Starlight_chann", 1006957219303211008], ["Starlight_chann", 1012256204825874433] ]
+TWITTER_LATEST_ID_STORE = File.expand_path('./latest_tweets_id.json')
 
 YOUTUBE_DATA_API_KEY = ''
 GOOGLE_CALENDAR_ID = ''

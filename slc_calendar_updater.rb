@@ -16,10 +16,32 @@ module SLCCalendar
       ssc = SLCCalendar::ScheduleCollector.new
       c = SLCCalendar::Calendar.new
 
+      latest_id_list = {}
+      begin
+        if File.exist?(TWITTER_LATEST_ID_STORE)
+          latest_id_list = JSON.parse(File.read(TWITTER_LATEST_ID_STORE))
+        end
+      rescue
+        latest_id_list = {}
+      end
+
       s = []
       TWITTER_LISTS.each{|x|
-        s += ssc.get_schedules(x[0], x[1])
+        user_id = x[0]
+        list_id = x[1]
+        if latest_id_list[list_id.to_s]
+          s += ssc.get_schedules(user_id, list_id, since_id: latest_id_list[list_id.to_s].to_i)
+        else
+          s += ssc.get_schedules(user_id, list_id)
+        end
+        latest_id_list[list_id.to_s] = ssc.latest_tweet_id
       }
+
+      begin
+        File.write(TWITTER_LATEST_ID_STORE, latest_id_list.to_json)
+      rescue
+        puts "Failed to write latest id list"
+      end
 
       current_events = c.events
 
