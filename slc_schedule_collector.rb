@@ -14,7 +14,7 @@ module SLCCalendar
     attr_reader :latest_tweet_id
 
     def initialize
-      @latest_tweet_id = 0
+      @latest_tweet_id = nil
     end
 
     def get_schedules(twitter_id, list_id, since_id: nil)
@@ -68,12 +68,12 @@ module SLCCalendar
       option = {count: 1000, tweet_mode: 'extended'}
       option[:since_id] = since_id if since_id
 
-      latest_id = 0
+      latest_id = nil
 
       client.list_timeline(twitter_user, list_id, option).each{|x|
         tweets_count += 1
         last_id = x.id
-        latest_id = x.id if latest_id < x.id
+        latest_id = x.id if latest_id.nil? || latest_id < x.id
         skip_unless_upcoming_live = false
         text = NKF.nkf('-w -Z4', x.full_text)
         next if !x.in_reply_to_status_id.nil? # Skip a reply to any tweet

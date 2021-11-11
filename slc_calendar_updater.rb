@@ -34,7 +34,7 @@ module SLCCalendar
         else
           s += ssc.get_schedules(user_id, list_id)
         end
-        latest_id_list[list_id.to_s] = ssc.latest_tweet_id
+        latest_id_list[list_id.to_s] = ssc.latest_tweet_id if ssc.latest_tweet_id
       }
 
       begin
