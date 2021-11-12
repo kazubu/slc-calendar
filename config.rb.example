@@ -4,10 +4,10 @@ TWITTER_CONSUMER_SECRET = ''
 TWITTER_BEARER_TOKEN = ''
 
 TWITTER_LISTS = [ ["username", 1012345678901234567], ["username2", 1012345678901234568] ]
-TWITTER_LATEST_ID_STORE = File.expand_path('../latest_tweets_id.json', __FILE__)
+TWITTER_LATEST_ID_STORE = File.expand_path('latest_tweets_id.json', __dir__)
 
 YOUTUBE_DATA_API_KEY = ''
 GOOGLE_CALENDAR_ID = ''
-GOOGLE_CALENDAR_CLIENT_SECRET_PATH = 'secret.json'
+GOOGLE_CALENDAR_CLIENT_SECRET_PATH = File.expand_path('secret.json', __dir__)
 TIME_ZONE = 'Japan'
 
