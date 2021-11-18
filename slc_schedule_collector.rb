@@ -27,30 +27,33 @@ module SLCCalendar
 
     def is_include_youtube_live(tweet)
       youtube_url_lists = [ 'youtu.be', 'youtube.com' ]
-      url = nil
+      urls = []
 
       return false if tweet.urls.count <= 0
       tweet.urls.each{|u|
         youtube_url_lists.each{|y|
           if u.expanded_url.to_s.index(y)
-            url = u.expanded_url.to_s
-            break
+            urls << u.expanded_url.to_s
           end
         }
       }
 
-      return false if url.nil?
+      return false if urls.length == 0
 
-      e_url = Utils.expand_url(url).to_s
+      result = []
+      urls.each{|url|
+        e_url = Utils.expand_url(url).to_s
 
-      if e_url.index('watch')
-        video_url, date, ch_name, title = Utils.is_upcoming_stream(e_url)
-        if video_url
-          return video_url, date, ch_name, title
+        if e_url.index('watch')
+          video_url, date, ch_name, title = Utils.is_upcoming_stream(e_url)
+          if video_url
+            result << [video_url, date, ch_name, title]
+          end
         end
-      end
+      }
 
-      return false
+      return result if result.length > 0
+      false
     end
 
     def collect_announces(twitter_user, list_id, since_id: nil)
@@ -79,26 +82,24 @@ module SLCCalendar
         next if !x.in_reply_to_status_id.nil? # Skip a reply to any tweet
         next if !x.retweeted_status.nil? # Skip RT
 
-        if (
-            text.index('配信') &&
-            (text.index('配信します') || text.index('告知'))
-        )
-          # pass
-        else
-          skip_unless_upcoming_live = true
-        end
+        skip_unless_upcoming_live = true
+        lives = is_include_youtube_live(x)
+        next if (skip_unless_upcoming_live && !lives)
 
-        live = is_include_youtube_live(x)
-        next if (skip_unless_upcoming_live && !live)
+        d = []
 
-        d = { user: x.user.screen_name,
-              uri: x.uri.to_s,
-              text: x.full_text,
-              live_info: live
+        lives.each{|live|
+          d << { user: x.user.screen_name,
+                uri: x.uri.to_s,
+                text: x.full_text,
+                live_info: live
+          }
         }
 
-        next if announce_lists.select{|a| a[:live_info] && a[:live_info][0] == d[:live_info][0]}.length > 0 if live
-        announce_lists << d
+        d.each{|dd|
+          next if announce_lists.select{|a| a[:live_info] && a[:live_info][0] == dd[:live_info][0]}.length > 0 if dd[:live_info]
+          announce_lists << dd
+        }
       }
 
       puts "Collected tweets: #{tweets_count}"
