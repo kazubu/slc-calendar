@@ -49,7 +49,6 @@ module SLCCalendar
         event_id = nil
         current_events.each{|ev|
           event_id = ev.id if ev.description.index(sc[:video_url]) if sc[:video_url]
-          event_id = ev.id if ev.description.index(sc[:tweet_url]) if sc[:tweet_url] if event_id.nil?
         }
 
         if event_id
