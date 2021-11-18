@@ -2,7 +2,7 @@
 
 require_relative './slc_schedule_collector'
 
-ssc = SLCScheduleCollector.new
+ssc = SLCCalendar::ScheduleCollector.new
 
 s = []
 TWITTER_LISTS.each{|x|
