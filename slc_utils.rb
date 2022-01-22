@@ -60,7 +60,9 @@ module SLCCalendar
       v = Utils.get_youtube_video_detail video_id
 
       if !v.nil? && !v['items'].nil? && !v['items'][0].nil? && v['items'][0]['id'] == video_id
-        if !v['items'][0]['snippet'].nil? && !v['items'][0]['snippet']['liveBroadcastContent'].nil? && (v['items'][0]['snippet']['liveBroadcastContent'] == 'upcoming' || force) && !v['items'][0]['liveStreamingDetails'].nil? && !v['items'][0]['liveStreamingDetails']['scheduledStartTime'].nil?
+        if (!v['items'][0]['snippet'].nil? && !v['items'][0]['snippet']['liveBroadcastContent'].nil? &&
+            (v['items'][0]['snippet']['liveBroadcastContent'] == 'upcoming' || v['items'][0]['snippet']['liveBroadcastContent'] == 'live' || force) &&
+            !v['items'][0]['liveStreamingDetails'].nil? && !v['items'][0]['liveStreamingDetails']['scheduledStartTime'].nil?)
           video_url = "https://www.youtube.com/watch?v=#{video_id}"
           return video_url, Time.parse(v['items'][0]['liveStreamingDetails']['scheduledStartTime']).getlocal("+09:00"), v['items'][0]['snippet']['channelTitle'], v['items'][0]['snippet']['title']
         end
