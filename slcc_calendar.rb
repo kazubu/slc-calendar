@@ -22,9 +22,9 @@ module SLCCalendar
     end
 
     def gen_event(sc)
-      title = "#{sc[:channel_title]}: #{sc[:title]}"
+      title = "#{sc.video.channel_title}: #{sc.video.video_title}"
       description = gen_description(sc)
-      start_time = date2datetime(sc[:date], sc[:time])
+      start_time = DateTime.parse(sc.video.scheduled_start_time.to_s)
 
       event = Google::Apis::CalendarV3::Event.new({
         summary: title,
@@ -108,23 +108,23 @@ module SLCCalendar
     end
 
     def gen_description(sc)
+      tweet_url = nil
+      if sc.tweet.kind_of?(String)
+        tweet_url = sc.tweet
+      else
+        tweet_url = sc.tweet.uri if sc.tweet.uri
+      end
+
       ret = ""
-      ret += "チャンネル: #{sc[:channel_title]}\n" if sc[:channel_title]
-      ret += "タイトル: #{sc[:title]}\n" if sc[:title]
-      ret += "\n" if sc[:video_url]
-      ret += "配信URL: #{a(sc[:video_url])}\n" if sc[:video_url]
-      ret += "\n" if sc[:tweet_url]
-      ret += "告知ツイート: #{a(sc[:tweet_url])}\n" if sc[:tweet_url]
+      ret += "チャンネル: #{sc.video.channel_title}\n"
+      ret += "タイトル: #{sc.video.video_title}\n"
+      ret += "\n" if sc.video.video_url
+      ret += "配信URL: #{a(sc.video.video_url)}\n" if sc.video.video_url
+      ret += "\n" if tweet_url
+      ret += "告知ツイート: #{a(tweet_url)}\n" if tweet_url
 
       ret
     end
 
-    # date: "2021/01/23", time: "12:34" => DateTime
-    def date2datetime(date, time)
-      year,mon,day,hr,min = "#{date} #{time}".gsub('/', ' ').gsub(':', ' ').split(' ').map{|x| x.to_i }
-      dt = DateTime.new(year, mon, day, hr, min, 0, offset="+0900")
-
-      return dt
-    end
   end
 end
