@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require_relative 'slcc_updater.rb'
+require_relative 'lib/slcc_updater.rb'
 
 puts "Process Start: " + Time.now.to_s
 puts "# Update by tweet"

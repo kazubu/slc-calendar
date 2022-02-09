@@ -93,7 +93,7 @@ module SLCCalendar
         config.bearer_token = @twitter_bearer_token
       end
 
-      announce_lists = []
+      announces = []
 
       tweets_count = 0
 
@@ -115,27 +115,27 @@ module SLCCalendar
         video_ids = extract_youtube_video_ids(tweet)
         next if !video_ids
 
-        all_announces = []
+        tweet_announces = []
 
         video_ids.each{|v|
-          all_announces << {
+          tweet_announces << {
             tweet: tweet,
             video_id: v
           }
         }
 
         # only recent tweet for same video url
-        all_announces.each{|aa|
-          next if announce_lists.select{|a| a[:video_id] && a[:video_id] == aa[:video_id]}.length > 0 if aa[:video_id]
-          announce_lists << aa
+        tweet_announces.each{|aa|
+          next if announces.select{|a| a[:video_id] && a[:video_id] == aa[:video_id]}.length > 0 if aa[:video_id]
+          announces << aa
         }
       }
 
       puts "Collected tweets: #{tweets_count}"
-      puts "Collected announces: #{announce_lists.length}"
+      puts "Collected announces: #{announces .length}"
       puts "Latest id: #{latest_id}"
 
-      return announce_lists, latest_id
+      return announces, latest_id
     end
   end
 end

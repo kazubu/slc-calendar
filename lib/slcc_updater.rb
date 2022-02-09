@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require_relative './config'
+require_relative '../config'
 require_relative './slcc_schedule_collector'
 require_relative './slcc_calendar'
 
