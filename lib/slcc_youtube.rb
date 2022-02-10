@@ -31,9 +31,9 @@ module SLCCalendar
     end
 
     class Video
-      attr_reader :channel_id, :channel_title, :video_id, :video_title, :live_state, :scheduled_start_time, :actual_start_time
+      attr_reader :channel_id, :channel_title, :video_id, :video_title, :live_state, :scheduled_start_time, :actual_start_time, :actual_end_time
 
-      def initialize(youtube:, channel_id:, channel_title:, video_id:, video_title:, live_state:, scheduled_start_time:, actual_start_time:)
+      def initialize(youtube:, channel_id:, channel_title:, video_id:, video_title:, live_state:, scheduled_start_time:, actual_start_time:, actual_end_time:)
         @youtube = youtube
         @channel_id = channel_id
         @channel_title = channel_title
@@ -42,6 +42,7 @@ module SLCCalendar
         @live_state = live_state
         @scheduled_start_time = scheduled_start_time
         @actual_start_time = actual_start_time
+        @actual_end_time = actual_end_time
       end
 
       def video_url
@@ -85,8 +86,6 @@ module SLCCalendar
       video_details['items'].each{|v|
         next if v['id'].nil?
         next if v['snippet'].nil?
-        next if v['snippet']['liveBroadcastContent'].nil?
-        next if v['liveStreamingDetails'].nil?
 
         videos << Video.new(
           youtube: self,
@@ -94,9 +93,10 @@ module SLCCalendar
           channel_title: v['snippet']['channelTitle'],
           video_id: v['id'],
           video_title: v['snippet']['title'],
-          live_state: v['snippet']['liveBroadcastContent'],
-          scheduled_start_time: (v['liveStreamingDetails']['scheduledStartTime'].nil? ? nil : Time.at(Time.parse(v['liveStreamingDetails']['scheduledStartTime']).to_i / 60 * 60).getlocal("+09:00")),
-          actual_start_time: (v['liveStreamingDetails']['actualStartTime'].nil? ? nil : Time.at(Time.parse(v['liveStreamingDetails']['actualStartTime']).to_i / 60 * 60).getlocal("+09:00"))
+          live_state: (v['snippet']['liveBroadcastContent'].nil? ? nil : v['snippet']['liveBroadcastContent']),
+          scheduled_start_time: ((v['liveStreamingDetails'].nil? || v['liveStreamingDetails']['scheduledStartTime'].nil?) ? nil : Time.at(Time.parse(v['liveStreamingDetails']['scheduledStartTime']).to_i / 60 * 60).getlocal("+09:00")),
+          actual_start_time: ((v['liveStreamingDetails'].nil? || v['liveStreamingDetails']['actualStartTime'].nil?) ? nil : Time.at(Time.parse(v['liveStreamingDetails']['actualStartTime']).to_i / 60 * 60).getlocal("+09:00")),
+          actual_end_time: ((v['liveStreamingDetails'].nil? || v['liveStreamingDetails']['actualEndTime'].nil?) ? nil : Time.at(Time.parse(v['liveStreamingDetails']['actualEndTime']).to_i / 60 * 60).getlocal("+09:00"))
         )
       }
 
