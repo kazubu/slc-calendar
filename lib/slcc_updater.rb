@@ -44,12 +44,6 @@ module SLCCalendar
         latest_id_list[list_id.to_s] = collector.latest_tweet_id if collector.latest_tweet_id
       }
 
-      begin
-        File.write(TWITTER_LATEST_ID_STORE, latest_id_list.to_json)
-      rescue
-        puts "Failed to write latest id list"
-      end
-
       current_events = calendar.events
 
       schedules.each{|sc|
@@ -75,6 +69,12 @@ module SLCCalendar
           calendar.puts_event(calendar.create(sc), message: "CREATE")
         end
       }
+
+      begin
+        File.write(TWITTER_LATEST_ID_STORE, latest_id_list.to_json)
+      rescue
+        puts "Failed to write latest id list"
+      end
 
       puts "#{create_count} created; #{update_count} updated; #{skip_count} skipped;"
     end
