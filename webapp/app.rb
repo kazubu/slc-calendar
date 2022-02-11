@@ -12,6 +12,8 @@ def event2hash(e)
   hash[:description] = e.description
   hash[:start_date] = e.start.date_time.to_s
   hash[:end_date] = e.end.date_time.to_s
+  hash[:channel_title] = e.extended_properties.shared["channel_title"] if e.extended_properties && e.extended_properties.shared && e.extended_properties.shared["channel_title"]
+  hash[:video_title] = e.extended_properties.shared["video_title"] if e.extended_properties && e.extended_properties.shared && e.extended_properties.shared["video_title"]
   hash[:live_url] = e.extended_properties.shared["live_url"] if e.extended_properties && e.extended_properties.shared && e.extended_properties.shared["live_url"]
   hash[:thumbnail_url] = e.extended_properties.shared["thumbnail_url"] if e.extended_properties && e.extended_properties.shared && e.extended_properties.shared["thumbnail_url"]
   hash[:live_ended] = e.extended_properties.shared["live_ended"] if e.extended_properties && e.extended_properties.shared && e.extended_properties.shared["live_ended"]
