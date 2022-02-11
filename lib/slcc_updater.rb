@@ -63,19 +63,16 @@ module SLCCalendar
           ev = current_events.select{|x| x.id == event_id}[0]
           nev = c.gen_event(sc)
           if ev.summary == nev.summary && ev.description == nev.description && ev.start.date_time == nev.start.date_time && ev.end.date_time == nev.end.date_time
-            puts "## no update; skip"
             skip_count += 1
-            c.puts_event(ev)
+            c.puts_event(ev, message: "SKIP")
           else
-            puts "## update"
             update_count += 1
-            c.puts_event c.update(event_id, sc)
+            c.puts_event(c.update(event_id, sc), message: "UPDATE")
           end
         else
           # no existing events
-          puts "## create"
           create_count += 1
-          c.puts_event c.create(sc)
+          c.puts_event(c.create(sc), message: "CREATE")
         end
       }
 
@@ -119,9 +116,8 @@ module SLCCalendar
         tweet_url = e[:tweet_url]
 
         if video.nil? || !video.is_upcoming_stream
-          puts '## marking as ended'
           e[:event].description += "##"
-          c.puts_event c.update_event(e[:event])
+          c.puts_event(c.update_event(e[:event]), message: "ENDED")
           ended_count += 1
           next
         end
@@ -130,13 +126,11 @@ module SLCCalendar
         nev = c.gen_event(sc)
 
         if e[:event].summary == nev.summary && e[:event].description == nev.description && e[:event].start.date_time == nev.start.date_time && e[:event].end.date_time == nev.end.date_time
-          puts "## no update; skip"
           skip_count += 1
-          c.puts_event(e[:event])
+          c.puts_event(e[:event], message: "SKIP")
         else
-          puts "## update"
           update_count += 1
-          c.puts_event c.update(e[:event].id, sc)
+          c.puts_event(c.update(e[:event].id, sc), message: "UPDATE")
         end
       }
 
@@ -161,7 +155,7 @@ module SLCCalendar
 
       sc = Schedule.new(video: video, tweet: nil)
 
-      c.puts_event c.create(sc)
+      c.puts_event(c.create(sc), message: "CREATE")
     end
   end
 end

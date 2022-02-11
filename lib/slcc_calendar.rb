@@ -14,17 +14,35 @@ module SLCCalendar
       @calendar_id = GOOGLE_CALENDAR_ID
     end
 
-    def puts_event(event)
-      puts "\tSummary:  #{event.summary}"
-      puts "\tID:       #{event.id}"
-      puts "\tStart:    #{event.start.date_time}"
-      puts "\tEnd:      #{event.end.date_time}"
+    def puts_event(event, message: nil)
+      print "#{message}\t" if message
+      print "summary: #{event.summary},"
+      print " calendar_id: #{event.id},"
+      print " start_time: #{event.start.date_time},"
+      print " end_time: #{event.end.date_time}\n"
     end
 
     def gen_event(sc)
       title = "#{sc.video.channel_title}: #{sc.video.video_title}"
       description = gen_description(sc)
-      start_time = DateTime.parse(sc.video.scheduled_start_time.to_s)
+      start_time = nil
+      end_time = nil
+
+      if sc.video.scheduled_start_time
+        start_time = DateTime.parse(sc.video.scheduled_start_time.to_s)
+      end
+
+      if start_time.nil? || ( sc.video.actual_start_time && ( sc.video.actual_start_time - sc.video.scheduled_start_time ).floor.abs > 600 )
+        start_time = DateTime.parse(sc.video.actual_start_time.to_s)
+      end
+
+      raise "Start date is not found" unless start_time
+
+      if sc.video.actual_end_time
+        end_time = DateTime.parse(sc.video.actual_end_time.to_s)
+      else
+        end_time = start_time + Rational(1, 24)
+      end
 
       event = Google::Apis::CalendarV3::Event.new({
         summary: title,
@@ -33,7 +51,7 @@ module SLCCalendar
           date_time: start_time
         ),
         end: Google::Apis::CalendarV3::EventDateTime.new(
-          date_time: start_time + Rational(1, 24)
+          date_time: end_time
         )
       })
 
