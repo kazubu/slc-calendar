@@ -81,11 +81,13 @@ module SLCCalendar
       thumbnail_url = sc.video.thumbnail_url
       live_ended = !sc.video.is_upcoming_stream
       live_url = sc.video.video_url
+      on_live = sc.video.live_state == 'live'
       ep = Google::Apis::CalendarV3::Event::ExtendedProperties.new({
         shared: {
           "thumbnail_url" => thumbnail_url,
           "live_ended" => (live_ended ? "true" : "false"),
-          "live_url" => live_url
+          "live_url" => live_url,
+          "on_live" => (on_live ? "true" : "false")
         }
       })
 
