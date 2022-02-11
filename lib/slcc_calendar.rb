@@ -24,12 +24,35 @@ module SLCCalendar
 
     # return true if event info is same
     def compare_events(ev, nev)
-      return (ev.summary == nev.summary &&
-              ev.description == nev.description &&
-              ev.start.date_time == nev.start.date_time &&
-              ev.end.date_time == nev.end.date_time &&
-              ev.extended_properties.shared == nev.extended_properties.shared &&
-              ev.extended_properties.private == nev.extended_properties.private)
+      return false if ev.summary != nev.summary
+      return false if ev.description != nev.description
+      return false if ev.start.date_time != nev.start.date_time
+      return false if ev.end.date_time != nev.end.date_time
+      if ev.extended_properties
+        return false if nev.extended_properties.nil?
+        if ev.extended_properties.shared
+          return false if nev.extended_properties.shared.nil?
+          return false if ev.extended_properties.shared != nev.extended_properties.shared
+        else
+          return false if nev.extended_properties.shared
+        end
+        if ev.extended_properties.private
+          return false if nev.extended_properties.private.nil?
+          return false if ev.extended_properties.private != nev.extended_properties.private
+        else
+          return false if nev.extended_properties.private
+        end
+      else
+        return false if nev.extended_properties
+      end
+
+      true
+    end
+
+    def is_live_ended(e)
+      return true if e.description[-2,2] == '##'
+      return true if e.extended_properties && e.extended_properties.shared && e.extended_properties.shared["live_ended"] && e.extended_properties.shared["live_ended"] == "true"
+      false
     end
 
     def gen_event(sc)
@@ -48,8 +71,10 @@ module SLCCalendar
 
       raise "Start date is not found" unless start_time
 
+      live_ended = false
       if sc.video.actual_end_time
         end_time = DateTime.parse(sc.video.actual_end_time.to_s)
+        live_ended = true
       else
         end_time = start_time + Rational(1, 24)
       end
@@ -57,7 +82,8 @@ module SLCCalendar
       thumbnail_url = sc.video.thumbnail_url
       ep = Google::Apis::CalendarV3::Event::ExtendedProperties.new({
         shared: {
-          "thumbnail_url" => thumbnail_url
+          "thumbnail_url" => thumbnail_url,
+          "live_ended" => (live_ended ? "true" : "false")
         }
       })
 

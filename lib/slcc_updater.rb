@@ -91,7 +91,7 @@ module SLCCalendar
 
       events = []
       current_events.each{|e|
-        if e.description[-2,2] == '##'
+        if calendar.is_live_ended(e)
           ended_count += 1
           next
         end
