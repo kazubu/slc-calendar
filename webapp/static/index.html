@@ -43,7 +43,7 @@ $(function() {
         html += 'alt="' + this.summary
         html += '">';
         html += dateToStr(new Date(this.start_date));
-        html += '<a href="' + this.live_url + '">';
+        html += '<a href="' + this.live_url + '" target="_blank" rel="noopener noreferrer">';
         html += '<img width="100%" src="' + this.thumbnail_url + '" />';
         html += '<p>';
         html += this.summary;
