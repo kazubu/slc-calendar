@@ -35,6 +35,7 @@ $(function() {
       result = result.sort(function (a, b) {
         return Date.parse(a.start_date) - Date.parse(b.start_date);
       });
+      var onlive_html = "";
       var upcoming_html = "";
       var ended_html = "";
       $.each(result, function(){
@@ -53,12 +54,17 @@ $(function() {
         if(this.live_ended == "true"){
           ended_html += html;
         } else {
-          upcoming_html += html;
+          if(this.on_live == "true"){
+            onlive_html += html;
+          } else {
+            upcoming_html += html;
+          }
         }
       });
       console.log(html);
+      $("#onlive-calendar").html(onlive_html);
       $("#calendar").html(upcoming_html);
-      $("#ended_events").html(ended_html);
+      $("#ended-calendar").html(ended_html);
     }
   });
 });
@@ -127,7 +133,22 @@ body {
         <div class="panel panel-default">
           <div class="panel-heading">
             <h4 class="panel-title">
-              <a data-toggle="collapse" href="#calendar-panel">配信中/これから配信</a>
+              <a data-toggle="collapse" href="#onlive-calendar-panel">配信中</a>
+            </h4>
+          </div>
+          <div id="onlive-calendar-panel" class="panel-collapse collapse show container">
+            <ul class="container row" id="onlive-calendar">
+              <li class="list-group-item event col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+                Loading...
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4 class="panel-title">
+              <a data-toggle="collapse" href="#calendar-panel">今後の配信</a>
             </h4>
           </div>
           <div id="calendar-panel" class="panel-collapse collapse show container">
@@ -146,7 +167,7 @@ body {
             </h4>
           </div>
           <div id="ended-panel" class="panel-collapse collapse container">
-            <ul class="container row" id="ended_events">
+            <ul class="container row" id="ended-calendar">
             </ul>
           </div>
         </div>
