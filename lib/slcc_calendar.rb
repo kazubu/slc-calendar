@@ -71,15 +71,15 @@ module SLCCalendar
 
       raise "Start date is not found" unless start_time
 
-      live_ended = false
+
       if sc.video.actual_end_time
         end_time = DateTime.parse(sc.video.actual_end_time.to_s)
-        live_ended = true
       else
         end_time = start_time + Rational(1, 24)
       end
 
       thumbnail_url = sc.video.thumbnail_url
+      live_ended = !sc.video.is_upcoming_stream
       ep = Google::Apis::CalendarV3::Event::ExtendedProperties.new({
         shared: {
           "thumbnail_url" => thumbnail_url,
@@ -184,7 +184,6 @@ module SLCCalendar
       ret += "配信URL: #{a(sc.video.video_url)}\n" if sc.video.video_url
       ret += "\n" if tweet_url
       ret += "告知ツイート: #{a(tweet_url)}\n" if tweet_url
-      ret += "##" if !sc.video.is_upcoming_stream
 
       ret
     end
