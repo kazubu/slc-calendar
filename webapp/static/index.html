@@ -39,18 +39,14 @@ $(function() {
       var upcoming_html = "";
       var ended_html = "";
       $.each(result, function(){
-        html = ""
-        html += '<li class="list-group-item event col-xs-6 col-sm-6 col-md-4 col-lg-3 col-xl-3" ';
-        html += 'alt="' + this.summary
-        html += '">';
-        html += dateToStr(new Date(this.start_date));
-        html += '<a href="' + this.live_url + '" target="_blank" rel="noopener noreferrer">';
-        html += '<img width="100%" src="' + this.thumbnail_url + '" />';
-        html += '<p>';
-        html += this.summary;
-        html += '</p>';
-        html += '</a>';
-        html += '</li>';
+        html = '<li class="list-group-item event col-xs-6 col-sm-6 col-md-4 col-lg-3 col-xl-3">' +
+          dateToStr(new Date(this.start_date)) +
+          `<a href="${this.live_url}" target="_blank" rel="noopener noreferrer">` +
+          `<img width="100%" src="${this.thumbnail_url}" />` +
+          `<p>${this.summary}</p>` +
+          '</a>' +
+          '</li>';
+
         if(this.live_ended == "true"){
           ended_html += html;
         } else {
@@ -63,7 +59,7 @@ $(function() {
       });
       console.log(html);
       $("#onlive-calendar").html(onlive_html);
-      $("#calendar").html(upcoming_html);
+      $("#upcoming-calendar").html(upcoming_html);
       $("#ended-calendar").html(ended_html);
     }
   });
@@ -148,11 +144,11 @@ body {
         <div class="panel panel-default">
           <div class="panel-heading">
             <h4 class="panel-title">
-              <a data-toggle="collapse" href="#calendar-panel">今後の配信</a>
+              <a data-toggle="collapse" href="#upcoming-calendar-panel">今後の配信</a>
             </h4>
           </div>
-          <div id="calendar-panel" class="panel-collapse collapse show container">
-            <ul class="container row" id="calendar">
+          <div id="upcoming-calendar-panel" class="panel-collapse collapse show container">
+            <ul class="container row" id="upcoming-calendar">
               <li class="list-group-item event col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
                 Loading...
               </li>
@@ -168,6 +164,9 @@ body {
           </div>
           <div id="ended-panel" class="panel-collapse collapse container">
             <ul class="container row" id="ended-calendar">
+              <li class="list-group-item event col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+                Loading...
+              </li>
             </ul>
           </div>
         </div>
