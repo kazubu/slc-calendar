@@ -15,13 +15,13 @@ module SLCCalendar
       update_count = 0
       skip_count = 0
 
-      ssc = SLCCalendar::ScheduleCollector.new(
+      collector = SLCCalendar::ScheduleCollector.new(
         twitter_consumer_key: TWITTER_CONSUMER_KEY,
         twitter_consumer_secret: TWITTER_CONSUMER_SECRET,
         twitter_bearer_token: TWITTER_BEARER_TOKEN,
         youtube_data_api_key: YOUTUBE_DATA_API_KEY
       )
-      c = SLCCalendar::Calendar.new
+      calendar = SLCCalendar::Calendar.new
 
       latest_id_list = {}
       begin
@@ -32,16 +32,16 @@ module SLCCalendar
         latest_id_list = {}
       end
 
-      s = []
+      schedules = []
       TWITTER_LISTS.each{|x|
         user_id = x[0]
         list_id = x[1]
         if latest_id_list[list_id.to_s]
-          s += ssc.get_schedules(user_id, list_id, since_id: latest_id_list[list_id.to_s].to_i)
+          schedules += collector.get_schedules(user_id, list_id, since_id: latest_id_list[list_id.to_s].to_i)
         else
-          s += ssc.get_schedules(user_id, list_id)
+          schedules += collector.get_schedules(user_id, list_id)
         end
-        latest_id_list[list_id.to_s] = ssc.latest_tweet_id if ssc.latest_tweet_id
+        latest_id_list[list_id.to_s] = collector.latest_tweet_id if collector.latest_tweet_id
       }
 
       begin
@@ -50,9 +50,9 @@ module SLCCalendar
         puts "Failed to write latest id list"
       end
 
-      current_events = c.events
+      current_events = calendar.events
 
-      s.each{|sc|
+      schedules.each{|sc|
         event_id = nil
         current_events.each{|ev|
           event_id = ev.id if ev.description.index(sc.video.video_url)
@@ -61,18 +61,18 @@ module SLCCalendar
         if event_id
           # event is already exists
           ev = current_events.select{|x| x.id == event_id}[0]
-          nev = c.gen_event(sc)
+          nev = calendar.gen_event(sc)
           if ev.summary == nev.summary && ev.description == nev.description && ev.start.date_time == nev.start.date_time && ev.end.date_time == nev.end.date_time
             skip_count += 1
-            c.puts_event(ev, message: "SKIP")
+            calendar.puts_event(ev, message: "SKIP")
           else
             update_count += 1
-            c.puts_event(c.update(event_id, sc), message: "UPDATE")
+            calendar.puts_event(calendar.update(event_id, sc), message: "UPDATE")
           end
         else
           # no existing events
           create_count += 1
-          c.puts_event(c.create(sc), message: "CREATE")
+          calendar.puts_event(calendar.create(sc), message: "CREATE")
         end
       }
 
@@ -85,9 +85,9 @@ module SLCCalendar
       skip_count = 0
       ended_count = 0
 
-      c = SLCCalendar::Calendar.new
+      calendar = SLCCalendar::Calendar.new
 
-      current_events = c.events(2, 120)
+      current_events = calendar.events(2, 120)
 
       events = []
       video_ids = []
@@ -121,24 +121,24 @@ module SLCCalendar
         if video.nil?
           #need to update existing event if live is deleted due to can't generate new event without video detail.
           e[:event].description += "##"
-          c.puts_event(c.update_event(e[:event]), message: "ENDED")
+          calendar.puts_event(calendar.update_event(e[:event]), message: "ENDED")
           ended_count += 1
           next
         elsif !video.is_upcoming_stream
           #live is finished. generate new event
-          c.puts_event(c.update(e[:event].id, sc), message: "ENDED")
+          calendar.puts_event(calendar.update(e[:event].id, sc), message: "ENDED")
           ended_count += 1
           next
         end
 
         # generate new event for compare
-        nev = c.gen_event(sc)
+        nev = calendar.gen_event(sc)
         if e[:event].summary == nev.summary && e[:event].description == nev.description && e[:event].start.date_time == nev.start.date_time && e[:event].end.date_time == nev.end.date_time
           skip_count += 1
-          c.puts_event(e[:event], message: "SKIP")
+          calendar.puts_event(e[:event], message: "SKIP")
         else
           update_count += 1
-          c.puts_event(c.update(e[:event].id, sc), message: "UPDATE")
+          calendar.puts_event(calendar.update(e[:event].id, sc), message: "UPDATE")
         end
       }
 
