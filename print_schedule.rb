@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require_relative './slc_schedule_collector'
+require_relative './lib/slc_schedule_collector'
 
 ssc = SLCCalendar::ScheduleCollector.new
 

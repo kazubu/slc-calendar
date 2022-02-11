@@ -1,10 +1,10 @@
 #!/usr/bin/env ruby
 
-require_relative 'slc_calendar_updater.rb'
+require_relative 'lib/slcc_updater.rb'
 
 puts "Process Start: " + Time.now.to_s
 puts "# Update by tweet"
-SLCCalendar::CalendarUpdater.new.update_by_tweets
+SLCCalendar::Updater.new.update_by_tweets
 puts "# Update existing schedules"
-SLCCalendar::CalendarUpdater.new.update_registered_events
+SLCCalendar::Updater.new.update_registered_events
 puts "Process Finished: " + Time.now.to_s

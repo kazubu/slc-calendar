@@ -1,11 +1,13 @@
 #!/usr/bin/env ruby
 
-require_relative './slc_schedule_collector'
-require_relative './slc_calendar'
+require_relative '../config'
+require_relative './slcc_schedule_collector'
+require_relative './slcc_calendar'
 
 module SLCCalendar
-  class CalendarUpdater
+  class Updater
     def initialize
+      @youtube = YouTube.new(api_key: YOUTUBE_DATA_API_KEY)
     end
 
     def update_by_tweets
@@ -13,7 +15,12 @@ module SLCCalendar
       update_count = 0
       skip_count = 0
 
-      ssc = SLCCalendar::ScheduleCollector.new
+      ssc = SLCCalendar::ScheduleCollector.new(
+        twitter_consumer_key: TWITTER_CONSUMER_KEY,
+        twitter_consumer_secret: TWITTER_CONSUMER_SECRET,
+        twitter_bearer_token: TWITTER_BEARER_TOKEN,
+        youtube_data_api_key: YOUTUBE_DATA_API_KEY
+      )
       c = SLCCalendar::Calendar.new
 
       latest_id_list = {}
@@ -48,25 +55,24 @@ module SLCCalendar
       s.each{|sc|
         event_id = nil
         current_events.each{|ev|
-          event_id = ev.id if ev.description.index(sc[:video_url]) if sc[:video_url]
+          event_id = ev.id if ev.description.index(sc.video.video_url)
         }
 
         if event_id
+          # event is already exists
           ev = current_events.select{|x| x.id == event_id}[0]
           nev = c.gen_event(sc)
           if ev.summary == nev.summary && ev.description == nev.description && ev.start.date_time == nev.start.date_time && ev.end.date_time == nev.end.date_time
-            puts "## no update; skip"
             skip_count += 1
-            c.puts_event(ev)
+            c.puts_event(ev, message: "SKIP")
           else
-            puts "## update"
             update_count += 1
-            c.puts_event c.update(event_id, sc)
+            c.puts_event(c.update(event_id, sc), message: "UPDATE")
           end
         else
-          puts "## create"
+          # no existing events
           create_count += 1
-          c.puts_event c.create(sc)
+          c.puts_event(c.create(sc), message: "CREATE")
         end
       }
 
@@ -83,6 +89,8 @@ module SLCCalendar
 
       current_events = c.events(2, 120)
 
+      events = []
+      video_ids = []
       current_events.each{|e|
         if e.description[-2,2] == '##'
           ended_count += 1
@@ -97,34 +105,40 @@ module SLCCalendar
           tweet_url = 'https://twitter.com/' + e.description.split('twitter.com/')[1].split('"')[0]
         end
 
-        detail = Utils.is_upcoming_stream(video_id)
-        unless detail
-          puts '## marking as ended'
-          e.description += "##"
-          c.puts_event c.update_event(e)
+        events << {event: e, video_id: video_id, tweet_url: tweet_url}
+        video_ids << video_id
+      }
+
+      videos = @youtube.get_videos(video_ids)
+
+      events.each{|e|
+        video = videos.find{|x| x.video_id == e[:video_id] }
+        tweet_url = e[:tweet_url]
+
+        sc = Schedule.new(video: video, tweet: tweet_url)
+
+        # live is finished after last execution
+        if video.nil?
+          #need to update existing event if live is deleted due to can't generate new event without video detail.
+          e[:event].description += "##"
+          c.puts_event(c.update_event(e[:event]), message: "ENDED")
+          ended_count += 1
+          next
+        elsif !video.is_upcoming_stream
+          #live is finished. generate new event
+          c.puts_event(c.update(e[:event].id, sc), message: "ENDED")
           ended_count += 1
           next
         end
 
-        sc = {
-          date: detail[1].strftime('%Y/%m/%d'),
-          time: detail[1].strftime('%H:%M'),
-          channel_title: detail[2],
-          title: detail[3],
-          video_url: detail[0],
-          tweet_url: tweet_url
-        }
-
+        # generate new event for compare
         nev = c.gen_event(sc)
-
-        if e.summary == nev.summary && e.description == nev.description && e.start.date_time == nev.start.date_time && e.end.date_time == nev.end.date_time
-          puts "## no update; skip"
+        if e[:event].summary == nev.summary && e[:event].description == nev.description && e[:event].start.date_time == nev.start.date_time && e[:event].end.date_time == nev.end.date_time
           skip_count += 1
-          c.puts_event(e)
+          c.puts_event(e[:event], message: "SKIP")
         else
-          puts "## update"
           update_count += 1
-          c.puts_event c.update(e.id, sc)
+          c.puts_event(c.update(e[:event].id, sc), message: "UPDATE")
         end
       }
 
@@ -141,21 +155,15 @@ module SLCCalendar
         return false
       end
 
-      detail = Utils.is_upcoming_stream(video_id, force: true)
-      unless detail
+      video = @youtube.get_videos(video_id)[0]
+      unless video
         puts 'Invalid video id?'
         return false
       end
 
-      sc = {
-        date: detail[1].strftime('%Y/%m/%d'),
-        time: detail[1].strftime('%H:%M'),
-        channel_title: detail[2],
-        title: detail[3],
-        video_url: detail[0]
-      }
+      sc = Schedule.new(video: video, tweet: nil)
 
-      c.puts_event c.create(sc)
+      c.puts_event(c.create(sc), message: "CREATE")
     end
   end
 end

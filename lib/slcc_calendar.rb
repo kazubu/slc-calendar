@@ -14,17 +14,35 @@ module SLCCalendar
       @calendar_id = GOOGLE_CALENDAR_ID
     end
 
-    def puts_event(event)
-      puts "\tSummary:  #{event.summary}"
-      puts "\tID:       #{event.id}"
-      puts "\tStart:    #{event.start.date_time}"
-      puts "\tEnd:      #{event.end.date_time}"
+    def puts_event(event, message: nil)
+      print "#{message}\t" if message
+      print "summary: #{event.summary},"
+      print " calendar_id: #{event.id},"
+      print " start_time: #{event.start.date_time},"
+      print " end_time: #{event.end.date_time}\n"
     end
 
     def gen_event(sc)
-      title = "#{sc[:channel_title]}: #{sc[:title]}"
+      title = "#{sc.video.channel_title}: #{sc.video.video_title}"
       description = gen_description(sc)
-      start_time = date2datetime(sc[:date], sc[:time])
+      start_time = nil
+      end_time = nil
+
+      if sc.video.scheduled_start_time
+        start_time = DateTime.parse(sc.video.scheduled_start_time.to_s)
+      end
+
+      if start_time.nil? || ( sc.video.actual_start_time && ( sc.video.actual_start_time - sc.video.scheduled_start_time ).floor.abs > 600 )
+        start_time = DateTime.parse(sc.video.actual_start_time.to_s)
+      end
+
+      raise "Start date is not found" unless start_time
+
+      if sc.video.actual_end_time
+        end_time = DateTime.parse(sc.video.actual_end_time.to_s)
+      else
+        end_time = start_time + Rational(1, 24)
+      end
 
       event = Google::Apis::CalendarV3::Event.new({
         summary: title,
@@ -33,7 +51,7 @@ module SLCCalendar
           date_time: start_time
         ),
         end: Google::Apis::CalendarV3::EventDateTime.new(
-          date_time: start_time + Rational(1, 24)
+          date_time: end_time
         )
       })
 
@@ -108,23 +126,24 @@ module SLCCalendar
     end
 
     def gen_description(sc)
+      tweet_url = nil
+      if sc.tweet.kind_of?(String)
+        tweet_url = sc.tweet
+      else
+        tweet_url = sc.tweet.uri if sc.tweet.uri
+      end
+
       ret = ""
-      ret += "チャンネル: #{sc[:channel_title]}\n" if sc[:channel_title]
-      ret += "タイトル: #{sc[:title]}\n" if sc[:title]
-      ret += "\n" if sc[:video_url]
-      ret += "配信URL: #{a(sc[:video_url])}\n" if sc[:video_url]
-      ret += "\n" if sc[:tweet_url]
-      ret += "告知ツイート: #{a(sc[:tweet_url])}\n" if sc[:tweet_url]
+      ret += "チャンネル: #{sc.video.channel_title}\n"
+      ret += "タイトル: #{sc.video.video_title}\n"
+      ret += "\n" if sc.video.video_url
+      ret += "配信URL: #{a(sc.video.video_url)}\n" if sc.video.video_url
+      ret += "\n" if tweet_url
+      ret += "告知ツイート: #{a(tweet_url)}\n" if tweet_url
+      ret += "##" if !sc.video.is_upcoming_stream
 
       ret
     end
 
-    # date: "2021/01/23", time: "12:34" => DateTime
-    def date2datetime(date, time)
-      year,mon,day,hr,min = "#{date} #{time}".gsub('/', ' ').gsub(':', ' ').split(' ').map{|x| x.to_i }
-      dt = DateTime.new(year, mon, day, hr, min, 0, offset="+0900")
-
-      return dt
-    end
   end
 end
