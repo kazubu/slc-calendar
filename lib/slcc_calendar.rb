@@ -22,6 +22,16 @@ module SLCCalendar
       print " end_time: #{event.end.date_time}\n"
     end
 
+    # return true if event info is same
+    def compare_events(ev, nev)
+      return (ev.summary == nev.summary &&
+              ev.description == nev.description &&
+              ev.start.date_time == nev.start.date_time &&
+              ev.end.date_time == nev.end.date_time &&
+              ev.extended_properties.shared == nev.extended_properties.shared &&
+              ev.extended_properties.private == nev.extended_properties.private)
+    end
+
     def gen_event(sc)
       title = "#{sc.video.channel_title}: #{sc.video.video_title}"
       description = gen_description(sc)
@@ -44,12 +54,20 @@ module SLCCalendar
         end_time = start_time + Rational(1, 24)
       end
 
+      thumbnail_url = sc.video.thumbnail_url
+      ep = Google::Apis::CalendarV3::Event::ExtendedProperties.new({
+        shared: {
+          "thumbnail_url" => thumbnail_url
+        }
+      })
+
       event = Google::Apis::CalendarV3::Event.new({
         summary: title,
         description: description,
         start: Google::Apis::CalendarV3::EventDateTime.new(
           date_time: start_time
         ),
+        extended_properties: ep,
         end: Google::Apis::CalendarV3::EventDateTime.new(
           date_time: end_time
         )

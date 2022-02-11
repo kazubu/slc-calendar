@@ -62,7 +62,7 @@ module SLCCalendar
           # event is already exists
           ev = current_events.select{|x| x.id == event_id}[0]
           nev = calendar.gen_event(sc)
-          if ev.summary == nev.summary && ev.description == nev.description && ev.start.date_time == nev.start.date_time && ev.end.date_time == nev.end.date_time
+          if calendar.compare_events(ev, nev)
             skip_count += 1
             calendar.puts_event(ev, message: "SKIP")
           else
@@ -131,7 +131,7 @@ module SLCCalendar
 
         # generate new event for compare
         nev = calendar.gen_event(sc)
-        if e[:event].summary == nev.summary && e[:event].description == nev.description && e[:event].start.date_time == nev.start.date_time && e[:event].end.date_time == nev.end.date_time
+        if calendar.compare_events(e[:event], nev)
           skip_count += 1
           calendar.puts_event(e[:event], message: "SKIP")
         else
