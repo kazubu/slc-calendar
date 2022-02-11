@@ -91,6 +91,11 @@ body {
   width 100%;
 }
 
+.row {
+  margin-right: 0px;
+  margin-left: 0px;
+}
+
 #header_link { color: white; }
 #footer_link { color: gray; }
 
@@ -114,7 +119,7 @@ body {
   </head>
   <body>
     <nav class="navbar navbar-dark bg-dark justify-content-center">
-      <div class="navbar-brand"><a href="." id="header_link">星チルカレンダー(β)</a></div>
+      <div class="navbar-brand"><a href="" id="header_link">星チルカレンダー(β)</a></div>
     </nav>
 
     <div class="main">
@@ -125,8 +130,8 @@ body {
               <a data-toggle="collapse" href="#calendar-panel">配信中/これから配信</a>
             </h4>
           </div>
-          <div id="calendar-panel" class="panel-collapse collapse show container">
-            <ul class="row" id="calendar">
+          <div id="calendar-panel" class="panel-collapse collapse show">
+            <ul class="container row" id="calendar">
             </ul>
           </div>
         </div>
@@ -137,8 +142,8 @@ body {
               <a data-toggle="collapse" href="#ended-panel">終了した配信</a>
             </h4>
           </div>
-          <div id="ended-panel" class="panel-collapse collapse container">
-            <ul class="row" id="ended_events">
+          <div id="ended-panel" class="panel-collapse collapse">
+            <ul class="container row" id="ended_events">
             </ul>
           </div>
         </div>
