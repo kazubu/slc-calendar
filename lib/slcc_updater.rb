@@ -90,7 +90,6 @@ module SLCCalendar
       current_events = calendar.events(2, 120)
 
       events = []
-      video_ids = []
       current_events.each{|e|
         if e.description[-2,2] == '##'
           ended_count += 1
@@ -106,10 +105,9 @@ module SLCCalendar
         end
 
         events << {event: e, video_id: video_id, tweet_url: tweet_url}
-        video_ids << video_id
       }
 
-      videos = @youtube.get_videos(video_ids)
+      videos = @youtube.get_videos(events.map{|x| x[:video_id] })
 
       events.each{|e|
         video = videos.find{|x| x.video_id == e[:video_id] }
