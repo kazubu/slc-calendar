@@ -87,7 +87,9 @@ module SLCCalendar
           "thumbnail_url" => thumbnail_url,
           "live_ended" => (live_ended ? "true" : "false"),
           "live_url" => live_url,
-          "on_live" => (on_live ? "true" : "false")
+          "on_live" => (on_live ? "true" : "false"),
+          "channel_name" => sc.video.channel_title,
+          "video_title" => sc.video.video_title
         }
       })
 
