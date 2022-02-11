@@ -33,7 +33,7 @@ get '/' do
 
   puts 'retrieving events'
   calendar = SLCCalendar::Calendar.new
-  current_events = calendar.events
+  current_events = calendar.events(1, 120)
   events = []
   current_events.each{|e|
     events << event2hash(e)
