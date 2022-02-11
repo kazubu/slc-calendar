@@ -115,16 +115,24 @@ module SLCCalendar
         video = videos.find{|x| x.video_id == e[:video_id] }
         tweet_url = e[:tweet_url]
 
-        if video.nil? || !video.is_upcoming_stream
+        sc = Schedule.new(video: video, tweet: tweet_url)
+
+        # live is finished after last execution
+        if video.nil?
+          #need to update existing event if live is deleted due to can't generate new event without video detail.
           e[:event].description += "##"
           c.puts_event(c.update_event(e[:event]), message: "ENDED")
           ended_count += 1
           next
+        elsif !video.is_upcoming_stream
+          #live is finished. generate new event
+          c.puts_event(c.update(e[:event].id, sc), message: "ENDED")
+          ended_count += 1
+          next
         end
 
-        sc = Schedule.new(video: video, tweet: tweet_url)
+        # generate new event for compare
         nev = c.gen_event(sc)
-
         if e[:event].summary == nev.summary && e[:event].description == nev.description && e[:event].start.date_time == nev.start.date_time && e[:event].end.date_time == nev.end.date_time
           skip_count += 1
           c.puts_event(e[:event], message: "SKIP")

@@ -140,6 +140,7 @@ module SLCCalendar
       ret += "配信URL: #{a(sc.video.video_url)}\n" if sc.video.video_url
       ret += "\n" if tweet_url
       ret += "告知ツイート: #{a(tweet_url)}\n" if tweet_url
+      ret += "##" if !sc.video.is_upcoming_stream
 
       ret
     end
