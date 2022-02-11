@@ -42,7 +42,7 @@ $(function() {
         html = '<li class="list-group-item event col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">' +
           dateToStr(new Date(this.start_date)) +
           `<a href="${this.live_url}" target="_blank" rel="noopener noreferrer">` +
-          `<p>${this.video_title}</p>` +
+          `<p class="video_title">${this.video_title}</p>` +
           '</a>' +
           `<div class="channel_name">${this.channel_name}</div>`
           '</li>';
@@ -96,6 +96,10 @@ body {
 .row {
   margin-right: 0px;
   margin-left: 0px;
+}
+
+.video_title {
+  font-size: small;
 }
 
 .channel_name {
