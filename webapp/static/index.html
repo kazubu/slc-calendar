@@ -43,8 +43,9 @@ $(function() {
           dateToStr(new Date(this.start_date)) +
           `<a href="${this.live_url}" target="_blank" rel="noopener noreferrer">` +
           `<img width="100%" src="${this.thumbnail_url}" />` +
-          `<p>${this.summary}</p>` +
+          `<p>${this.video_title}</p>` +
           '</a>' +
+          `<div class="channel_name">${this.channel_name}</div>`
           '</li>';
 
         if(this.live_ended == "true"){
@@ -96,6 +97,11 @@ body {
 .row {
   margin-right: 0px;
   margin-left: 0px;
+}
+
+.channel_name {
+  font-size: small;
+  text-align: left;
 }
 
 #header_link { color: white; }
