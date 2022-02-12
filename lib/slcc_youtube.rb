@@ -88,6 +88,14 @@ module SLCCalendar
         video_ids = Utils.url_to_video_id(video_ids)
       end
 
+      return get_videos_impl(video_ids)
+    end
+
+    private
+
+    def get_videos_impl(video_ids)
+      videos = []
+
       video_details = api_get(
         resource: 'videos',
         options: { part: 'snippet,liveStreamingDetails', id: video_ids }
@@ -115,8 +123,6 @@ module SLCCalendar
 
       return videos
     end
-
-    private
 
     def api_get(resource:, options:)
       if options.kind_of?(Hash)
