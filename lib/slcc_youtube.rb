@@ -90,7 +90,7 @@ module SLCCalendar
       end
 
       while(video_id_array.length > 0)
-        videos += get_videos_impl(video_id_array.pop(50).join(','))
+        videos += get_videos_impl(video_id_array_to_video_ids(video_id_array.pop(50)))
       end
 
       return  videos
