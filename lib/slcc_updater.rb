@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 require_relative '../config'
 require_relative './slcc_schedule_collector'
@@ -99,7 +100,7 @@ module SLCCalendar
         video_id = e.description.split('/watch?v=')[1].split('"')[0]
 
         tweet_url = nil
-        tweet_url = 'https://twitter.com/' + e.description.split('twitter.com/')[1].split('"')[0] if e.description.index('twitter.com/')
+        tweet_url = "https://twitter.com/#{e.description.split('twitter.com/')[1].split('"')[0]}" if e.description.index('twitter.com/')
 
         events << { event: e, video_id: video_id, tweet_url: tweet_url }
       end
@@ -115,11 +116,11 @@ module SLCCalendar
         # live is finished after last execution
         if video.nil?
           # need to update existing event if live is deleted due to can't generate new event without video detail.
-          e[:event].description += '##'
+          e[:event].description = "#{e[:event].description}##"
           calendar.puts_event(calendar.update_event(e[:event]), message: 'ENDED')
           ended_count += 1
           next
-        elsif !video.is_upcoming_stream
+        elsif !video.upcoming_stream?
           # live is finished. generate new event
           calendar.puts_event(calendar.update(e[:event].id, sc), message: 'ENDED')
           ended_count += 1

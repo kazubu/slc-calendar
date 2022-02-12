@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 require 'google/apis/calendar_v3'
 require 'googleauth'
@@ -61,11 +62,8 @@ module SLCCalendar
     def gen_event(sc)
       title = "#{sc.video.channel_title}: #{sc.video.video_title}"
       description = gen_description(sc)
-      start_time = nil
-      end_time = nil
 
       start_time = DateTime.parse(sc.video.scheduled_start_time.to_s) if sc.video.scheduled_start_time
-
       start_time = DateTime.parse(sc.video.actual_start_time.to_s) if start_time.nil? || (sc.video.actual_start_time && (sc.video.actual_start_time - sc.video.scheduled_start_time).floor.abs > 600)
 
       raise 'Start date is not found' unless start_time
@@ -77,7 +75,7 @@ module SLCCalendar
                  end
 
       thumbnail_url = sc.video.thumbnail_url
-      live_ended = !sc.video.is_upcoming_stream
+      live_ended = !sc.video.upcoming_stream?
       live_url = sc.video.video_url
       on_live = sc.video.live_state == 'live'
       ep = Google::Apis::CalendarV3::Event::ExtendedProperties.new({
@@ -174,7 +172,7 @@ module SLCCalendar
         tweet_url = sc.tweet.uri
       end
 
-      ret = ''
+      ret = +''
       ret += "チャンネル: #{sc.video.channel_title}\n"
       ret += "タイトル: #{sc.video.video_title}\n"
       ret += "\n" if sc.video.video_url

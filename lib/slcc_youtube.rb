@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 require 'json'
 require 'net/http'
 require 'time'
@@ -61,7 +63,7 @@ module SLCCalendar
         thumbnails.first[1]['url']
       end
 
-      def is_upcoming_stream
+      def upcoming_stream?
         return true if @live_state == 'upcoming' || @live_state == 'live'
 
         false
@@ -82,9 +84,10 @@ module SLCCalendar
       videos = []
 
       video_id_array = []
-      if video_ids.is_a?(Array)
+      case video_ids
+      when Array
         video_id_array = video_ids
-      elsif video_ids.is_a?(String)
+      when String
         video_id_array = video_ids.split(',')
       else
         raise 'Video IDs should be Array or String'
@@ -144,7 +147,7 @@ module SLCCalendar
 
       if res['error']
         if res ['error']['errors'][0] && res['error']['errors'][0]['reason']
-          raise 'Received error from YouTube. Reason: ' + res['error']['errors'][0]['reason']
+          raise "Received error from YouTube. Reason: #{res['error']['errors'][0]['reason']}"
         else
           raise 'Received unknown error from YouTube'
         end

@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 require 'twitter'
 require 'nkf'
 
@@ -59,7 +61,7 @@ module SLCCalendar
 
       announces.each do |a|
         video = videos.find{|v| v.video_id == a[:video_id] }
-        next if video.nil? || !video.is_upcoming_stream
+        next if video.nil? || !video.upcoming_stream?
 
         schedules << Schedule.new(video: video, tweet: a[:tweet])
       end
