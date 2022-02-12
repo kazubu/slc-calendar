@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby
 
-require "google/apis/calendar_v3"
-require "googleauth"
-require "googleauth/stores/file_token_store"
-require "fileutils"
+require 'google/apis/calendar_v3'
+require 'googleauth'
+require 'googleauth/stores/file_token_store'
+require 'fileutils'
 
 module SLCCalendar
   class Calendar
@@ -28,30 +28,33 @@ module SLCCalendar
       return false if ev.description != nev.description
       return false if ev.start.date_time != nev.start.date_time
       return false if ev.end.date_time != nev.end.date_time
+
       if ev.extended_properties
         return false if nev.extended_properties.nil?
+
         if ev.extended_properties.shared
           return false if nev.extended_properties.shared.nil?
           return false if ev.extended_properties.shared != nev.extended_properties.shared
-        else
-          return false if nev.extended_properties.shared
+        elsif nev.extended_properties.shared
+          return false
         end
         if ev.extended_properties.private
           return false if nev.extended_properties.private.nil?
           return false if ev.extended_properties.private != nev.extended_properties.private
-        else
-          return false if nev.extended_properties.private
+        elsif nev.extended_properties.private
+          return false
         end
-      else
-        return false if nev.extended_properties
+      elsif nev.extended_properties
+        return false
       end
 
       true
     end
 
     def is_live_ended(e)
-      return true if e.description[-2,2] == '##'
-      return true if e.extended_properties && e.extended_properties.shared && e.extended_properties.shared["live_ended"] && e.extended_properties.shared["live_ended"] == "true"
+      return true if e.description[-2, 2] == '##'
+      return true if e.extended_properties && e.extended_properties.shared && e.extended_properties.shared['live_ended'] && e.extended_properties.shared['live_ended'] == 'true'
+
       false
     end
 
@@ -61,98 +64,84 @@ module SLCCalendar
       start_time = nil
       end_time = nil
 
-      if sc.video.scheduled_start_time
-        start_time = DateTime.parse(sc.video.scheduled_start_time.to_s)
-      end
+      start_time = DateTime.parse(sc.video.scheduled_start_time.to_s) if sc.video.scheduled_start_time
 
-      if start_time.nil? || ( sc.video.actual_start_time && ( sc.video.actual_start_time - sc.video.scheduled_start_time ).floor.abs > 600 )
-        start_time = DateTime.parse(sc.video.actual_start_time.to_s)
-      end
+      start_time = DateTime.parse(sc.video.actual_start_time.to_s) if start_time.nil? || (sc.video.actual_start_time && (sc.video.actual_start_time - sc.video.scheduled_start_time).floor.abs > 600)
 
-      raise "Start date is not found" unless start_time
+      raise 'Start date is not found' unless start_time
 
-
-      if sc.video.actual_end_time
-        end_time = DateTime.parse(sc.video.actual_end_time.to_s)
-      else
-        end_time = start_time + Rational(1, 24)
-      end
+      end_time = if sc.video.actual_end_time
+                   DateTime.parse(sc.video.actual_end_time.to_s)
+                 else
+                   start_time + Rational(1, 24)
+                 end
 
       thumbnail_url = sc.video.thumbnail_url
       live_ended = !sc.video.is_upcoming_stream
       live_url = sc.video.video_url
       on_live = sc.video.live_state == 'live'
       ep = Google::Apis::CalendarV3::Event::ExtendedProperties.new({
-        shared: {
-          "thumbnail_url" => thumbnail_url,
-          "live_ended" => (live_ended ? "true" : "false"),
-          "live_url" => live_url,
-          "on_live" => (on_live ? "true" : "false"),
-          "channel_name" => sc.video.channel_title,
-          "video_title" => sc.video.video_title
-        }
-      })
+                                                                     shared: {
+                                                                       'thumbnail_url' => thumbnail_url,
+                                                                       'live_ended' => (live_ended ? 'true' : 'false'),
+                                                                       'live_url' => live_url,
+                                                                       'on_live' => (on_live ? 'true' : 'false'),
+                                                                       'channel_name' => sc.video.channel_title,
+                                                                       'video_title' => sc.video.video_title
+                                                                     }
+                                                                   })
 
-      event = Google::Apis::CalendarV3::Event.new({
-        summary: title,
-        description: description,
-        start: Google::Apis::CalendarV3::EventDateTime.new(
-          date_time: start_time
-        ),
-        extended_properties: ep,
-        end: Google::Apis::CalendarV3::EventDateTime.new(
-          date_time: end_time
-        )
-      })
-
-      event
+      Google::Apis::CalendarV3::Event.new({
+                                            summary: title,
+                                            description: description,
+                                            start: Google::Apis::CalendarV3::EventDateTime.new(
+                                              date_time: start_time
+                                            ),
+                                            extended_properties: ep,
+                                            end: Google::Apis::CalendarV3::EventDateTime.new(
+                                              date_time: end_time
+                                            )
+                                          })
     end
 
     def events(past = 7, future = 120)
       events = @service.list_events(@calendar_id,
                                     time_min: (Time.now - past * 24 * 60 * 60).iso8601,
-                                    time_max: (Time.now + future * 24 * 60 * 60).iso8601
-                                   )
+                                    time_max: (Time.now + future * 24 * 60 * 60).iso8601)
 
       puts "#{events.items.length} events received"
-      return events.items
+      events.items
     end
 
     def create(sc)
       return if sc.nil?
 
       event = gen_event(sc)
-      response =  @service.insert_event(
+      @service.insert_event(
         @calendar_id,
         event
       )
-
-      return response
     end
 
     def update(event_id, sc)
       return if sc.nil?
 
       event = gen_event(sc)
-      response =  @service.update_event(
+      @service.update_event(
         @calendar_id,
         event_id,
         event
       )
-
-      return response
     end
 
     def update_event(ev)
       return if ev.nil?
 
-      response = @service.update_event(
+      @service.update_event(
         @calendar_id,
         ev.id,
         ev
       )
-
-      return response
     end
 
     def delete(event_id)
@@ -163,27 +152,29 @@ module SLCCalendar
     end
 
     private
+
     def authorize
       authorizer = Google::Auth::ServiceAccountCredentials.make_creds(
         json_key_io: File.open(GOOGLE_CALENDAR_CLIENT_SECRET_PATH),
-        scope: Google::Apis::CalendarV3::AUTH_CALENDAR)
+        scope: Google::Apis::CalendarV3::AUTH_CALENDAR
+      )
       authorizer.fetch_access_token!
       authorizer
     end
 
     def a(url)
-      return "<a href=\"#{url}\"target=\"_blank\">#{url}</a>"
+      "<a href=\"#{url}\"target=\"_blank\">#{url}</a>"
     end
 
     def gen_description(sc)
       tweet_url = nil
-      if sc.tweet.kind_of?(String)
+      if sc.tweet.is_a?(String)
         tweet_url = sc.tweet
-      else
-        tweet_url = sc.tweet.uri if sc.tweet.uri
+      elsif sc.tweet.uri
+        tweet_url = sc.tweet.uri
       end
 
-      ret = ""
+      ret = ''
       ret += "チャンネル: #{sc.video.channel_title}\n"
       ret += "タイトル: #{sc.video.video_title}\n"
       ret += "\n" if sc.video.video_url
@@ -193,6 +184,5 @@ module SLCCalendar
 
       ret
     end
-
   end
 end

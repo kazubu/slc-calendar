@@ -12,7 +12,7 @@ module SLCCalendar
         begin
           try += 1
           yield
-        rescue
+        rescue StandardError
           retry if try < times
           raise
         end
@@ -20,9 +20,9 @@ module SLCCalendar
 
       def url_to_video_id(url)
         if url.index('http') == 0
-          return url.split('v=')[1].split('&')[0]
+          url.split('v=')[1].split('&')[0]
         else
-          return url
+          url
         end
       end
 
@@ -53,16 +53,17 @@ module SLCCalendar
       def thumbnail_url
         return nil if thumbnails.nil? || thumbnails.count == 0
 
-        return thumbnails["standard"]["url"] if thumbnails["standard"]
-        return thumbnails["high"]["url"] if thumbnails["high"]
-        return thumbnails["maxres"]["url"] if thumbnails["maxres"]
+        return thumbnails['standard']['url'] if thumbnails['standard']
+        return thumbnails['high']['url'] if thumbnails['high']
+        return thumbnails['maxres']['url'] if thumbnails['maxres']
 
         # return 1st thumbnail if above thumbnails are not found
-        return thumbnails.first[1]["url"]
+        thumbnails.first[1]['url']
       end
 
       def is_upcoming_stream
         return true if @live_state == 'upcoming' || @live_state == 'live'
+
         false
       end
 
@@ -81,25 +82,23 @@ module SLCCalendar
       videos = []
 
       video_id_array = []
-      if video_ids.kind_of?(Array)
+      if video_ids.is_a?(Array)
         video_id_array = video_ids
-      elsif video_ids.kind_of?(String)
+      elsif video_ids.is_a?(String)
         video_id_array = video_ids.split(',')
       else
-        raise "Video IDs should be Array or String"
+        raise 'Video IDs should be Array or String'
       end
 
-      while(video_id_array.length > 0)
-        videos += get_videos_impl(video_id_array_to_video_ids(video_id_array.pop(50)))
-      end
+      videos += get_videos_impl(video_id_array_to_video_ids(video_id_array.pop(50))) while video_id_array.length > 0
 
-      return  videos
+      videos
     end
 
     private
 
     def video_id_array_to_video_ids(video_id_array)
-        return video_id_array.map{|x| Utils.url_to_video_id x}.join(',')
+      video_id_array.map{|x| Utils.url_to_video_id x }.join(',')
     end
 
     def get_videos_impl(video_ids)
@@ -112,7 +111,7 @@ module SLCCalendar
 
       return nil if video_details.nil? || video_details['items'].nil?
 
-      video_details['items'].each{|v|
+      video_details['items'].each do |v|
         next if v['id'].nil?
         next if v['snippet'].nil?
 
@@ -123,27 +122,25 @@ module SLCCalendar
           video_id: v['id'],
           video_title: v['snippet']['title'],
           live_state: (v['snippet']['liveBroadcastContent'].nil? ? nil : v['snippet']['liveBroadcastContent']),
-          scheduled_start_time: ((v['liveStreamingDetails'].nil? || v['liveStreamingDetails']['scheduledStartTime'].nil?) ? nil : Time.at(Time.parse(v['liveStreamingDetails']['scheduledStartTime']).to_i / 60 * 60).getlocal("+09:00")),
-          actual_start_time: ((v['liveStreamingDetails'].nil? || v['liveStreamingDetails']['actualStartTime'].nil?) ? nil : Time.at(Time.parse(v['liveStreamingDetails']['actualStartTime']).to_i / 60 * 60).getlocal("+09:00")),
-          actual_end_time: ((v['liveStreamingDetails'].nil? || v['liveStreamingDetails']['actualEndTime'].nil?) ? nil : Time.at(Time.parse(v['liveStreamingDetails']['actualEndTime']).to_i / 60 * 60).getlocal("+09:00")),
+          scheduled_start_time: ((v['liveStreamingDetails'].nil? || v['liveStreamingDetails']['scheduledStartTime'].nil?) ? nil : Time.at(Time.parse(v['liveStreamingDetails']['scheduledStartTime']).to_i / 60 * 60).getlocal('+09:00')),
+          actual_start_time: ((v['liveStreamingDetails'].nil? || v['liveStreamingDetails']['actualStartTime'].nil?) ? nil : Time.at(Time.parse(v['liveStreamingDetails']['actualStartTime']).to_i / 60 * 60).getlocal('+09:00')),
+          actual_end_time: ((v['liveStreamingDetails'].nil? || v['liveStreamingDetails']['actualEndTime'].nil?) ? nil : Time.at(Time.parse(v['liveStreamingDetails']['actualEndTime']).to_i / 60 * 60).getlocal('+09:00')),
           thumbnails: v['snippet']['thumbnails']
         )
-      }
+      end
 
-      return videos
+      videos
     end
 
     def api_get(resource:, options:)
-      if options.kind_of?(Hash)
-        options = options.map{|k,v| "#{k}=#{v}"}.join('&')
-      end
+      options = options.map{|k, v| "#{k}=#{v}" }.join('&') if options.is_a?(Hash)
 
       url = "https://www.googleapis.com/youtube/v3/#{resource}?key=#{@api_key}&#{options}"
 
       res = nil
-      Utils.retry_on_error {
+      Utils.retry_on_error do
         res = JSON.parse(Net::HTTP.get_response(URI.parse(url)).body)
-      }
+      end
 
       if res['error']
         if res ['error']['errors'][0] && res['error']['errors'][0]['reason']

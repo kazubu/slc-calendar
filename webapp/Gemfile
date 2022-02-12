@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
-gem 'twitter'
-gem 'googleauth'
 gem 'google-apis-calendar_v3'
-gem 'sinatra'
+gem 'googleauth'
 gem 'rack-cache'
+gem 'sinatra'
+gem 'twitter'
