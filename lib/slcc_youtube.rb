@@ -80,18 +80,27 @@ module SLCCalendar
     def get_videos(video_ids)
       videos = []
 
+      video_id_array = []
       if video_ids.kind_of?(Array)
-        video_ids = video_ids.map{|x| Utils.url_to_video_id x}.join(',')
-      elsif video_ids.kind_of?(String) && video_ids.index(',')
-        video_ids = video_ids.split(',').map{|x| Utils.url_to_video_id x}.join(',')
+        video_id_array = video_ids
+      elsif video_ids.kind_of?(String)
+        video_id_array = video_ids.split(',')
       else
-        video_ids = Utils.url_to_video_id(video_ids)
+        raise "Video IDs should be Array or String"
       end
 
-      return get_videos_impl(video_ids)
+      while(video_id_array.length > 0)
+        videos += get_videos_impl(video_id_array.pop(50).join(','))
+      end
+
+      return  videos
     end
 
     private
+
+    def video_id_array_to_video_ids(video_id_array)
+        return video_id_array.map{|x| Utils.url_to_video_id x}.join(',')
+    end
 
     def get_videos_impl(video_ids)
       videos = []
