@@ -29,13 +29,6 @@ $(function() {
     return format;
   }
 
-  function dateToTimeStr(date) {
-    format = 'hh:mm'
-    format = format.replace(/hh/g, ('0' + date.getHours()).slice(-2));
-    format = format.replace(/mm/g, ('0' + date.getMinutes()).slice(-2));
-    return format;
-  }
-
   function dateToDateStr(date) {
     var weekday = ["日", "月", "火", "水", "木", "金", "土"];
     format = 'YYYY/MM/DD(WW)'
@@ -65,8 +58,12 @@ $(function() {
     success: function( result ){
       let upcoming_last_date = "";
       let ended_last_date = "";
+      let onlive_count = 0;
+
       let onlive_html = '<li class="list-group-item bg-success text-light col-cs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">ただいま配信中！</li>';
+      let no_onlive_html = '<li class="list-group-item bg-dark text-light col-cs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">現在配信中のライブはありません。</li>';
       let upcoming_html = "";
+      let no_upcoming_html = '<ul class="container row"><li class="list-group-item bg-dark text-light col-cs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">配信予定のライブはありません。</li></ul>';
       let ended_html = "";
 
       result = result.sort(function (a, b) {
@@ -91,6 +88,7 @@ $(function() {
         } else {
           if(this.on_live == "true"){
             onlive_html += html;
+            onlive_count++;
           } else {
             upcoming_html += separator_html(upcoming_last_date, date);
             upcoming_html += html;
@@ -99,8 +97,18 @@ $(function() {
         }
       });
 
-      $("#onlive-calendar").html(onlive_html);
-      $("#upcoming-calendar-panel").html(upcoming_html + "</ul>");
+      if(onlive_count != 0){
+        $("#onlive-calendar").html(onlive_html);
+      } else {
+        $("#onlive-calendar").html(no_onlive_html);
+      }
+
+      if(upcoming_html != ""){
+        $("#upcoming-calendar-panel").html(upcoming_html + "</ul>");
+      } else {
+        $("#upcoming-calendar-panel").html(no_upcoming_html");
+      }
+
       $("#ended-calendar-panel").html(ended_html + "</ul>");
     }
   });
