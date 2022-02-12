@@ -6,10 +6,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>星チルカレンダー(β)</title>
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 
     <script type="text/javascript">
 const ICON = "data:image/png;base64,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"
@@ -17,7 +17,7 @@ $(function() {
   $('head').append('<link rel="icon" href="'+ICON+'">');
   $('head').append('<link rel="apple-touch-icon" href="'+ICON+'">');
 
-  function dateToStr(date) {
+  function dateToDateTimeStr(date) {
     var weekday = ["日", "月", "火", "水", "木", "金", "土"];
     format = 'YYYY/MM/DD(WW) hh:mm'
     format = format.replace(/YYYY/g, date.getFullYear());
@@ -29,38 +29,78 @@ $(function() {
     return format;
   }
 
+  function dateToTimeStr(date) {
+    format = 'hh:mm'
+    format = format.replace(/hh/g, ('0' + date.getHours()).slice(-2));
+    format = format.replace(/mm/g, ('0' + date.getMinutes()).slice(-2));
+    return format;
+  }
+
+  function dateToDateStr(date) {
+    var weekday = ["日", "月", "火", "水", "木", "金", "土"];
+    format = 'YYYY/MM/DD(WW)'
+    format = format.replace(/YYYY/g, date.getFullYear());
+    format = format.replace(/MM/g, ('0' + (date.getMonth() + 1)).slice(-2));
+    format = format.replace(/DD/g, ('0' + date.getDate()).slice(-2));
+    format = format.replace(/WW/g, weekday[date.getDay()]);
+    return format;
+  }
+
+  function separator_html(last_date, date) {
+    var html = "";
+
+    if(last_date != date){
+      if(last_date != ""){
+        html += "</ul>";
+      }
+      html += `<ul class="container row">` +
+      `<li class="list-group-item bg-dark text-light col-cs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">${date}</li>`;
+    }
+
+    return html;
+  }
+
   $.ajax({
     url: "./events",
     success: function( result ){
+      let upcoming_last_date = "";
+      let ended_last_date = "";
+      let onlive_html = '<li class="list-group-item bg-success text-light col-cs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">ただいま配信中！</li>';
+      let upcoming_html = "";
+      let ended_html = "";
+
       result = result.sort(function (a, b) {
         return Date.parse(a.start_date) - Date.parse(b.start_date);
       });
-      var onlive_html = "";
-      var upcoming_html = "";
-      var ended_html = "";
+
       $.each(result, function(){
-        html = '<li class="list-group-item event col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">' +
-          dateToStr(new Date(this.start_date)) +
+        const html = '<li class="list-group-item event col-xs-6 col-sm-4 col-md-4 col-lg-3 col-xl-3">' +
+          `<div class="video_date">${dateToDateTimeStr(new Date(this.start_date))}～</div>` +
           `<a href="${this.live_url}" target="_blank" rel="noopener noreferrer">` +
           `<p class="video_title">${this.video_title}</p>` +
           '</a>' +
           `<div class="channel_name">${this.channel_name}</div>`
           '</li>';
 
+        const date = dateToDateStr(new Date(this.start_date));
         if(this.live_ended == "true"){
+          ended_html += separator_html(ended_last_date, date);
           ended_html += html;
+          ended_last_date = date;
         } else {
           if(this.on_live == "true"){
             onlive_html += html;
           } else {
+            upcoming_html += separator_html(upcoming_last_date, date);
             upcoming_html += html;
+            upcoming_last_date = date;
           }
         }
       });
-      console.log(html);
+
       $("#onlive-calendar").html(onlive_html);
-      $("#upcoming-calendar").html(upcoming_html);
-      $("#ended-calendar").html(ended_html);
+      $("#upcoming-calendar-panel").html(upcoming_html + "</ul>");
+      $("#ended-calendar-panel").html(ended_html + "</ul>");
     }
   });
 });
@@ -99,14 +139,24 @@ body {
 }
 
 .video_title {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  font-size: small;
+    margin-bottom: 2rem;
+}
+
+.video_date {
+  text-align: left;
   font-size: small;
 }
 
 .channel_name {
+  overflow-wrap: break-word;
+  word-break: break-word;
   font-size: small;
-  text-align: left;
   position: absolute;
   bottom: 0;
+    margin-bottom: 0.5rem;
 }
 
 #header_link { color: white; }
@@ -123,12 +173,8 @@ body {
 
       gtag('config', 'G-7SMSY4J8EH');
     </script>
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1616178995872166"
-     crossorigin="anonymous"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1616178995872166" crossorigin="anonymous"></script>
   </head>
   <body>
     <nav class="navbar navbar-dark bg-dark justify-content-center">
@@ -140,7 +186,7 @@ body {
         <div class="panel panel-default">
           <div class="panel-heading">
             <h4 class="panel-title">
-              <a data-toggle="collapse" href="#onlive-calendar-panel">配信中</a>
+              <a data-bs-toggle="collapse" href="#onlive-calendar-panel">配信中</a>
             </h4>
           </div>
           <div id="onlive-calendar-panel" class="panel-collapse collapse show container">
@@ -155,7 +201,7 @@ body {
         <div class="panel panel-default">
           <div class="panel-heading">
             <h4 class="panel-title">
-              <a data-toggle="collapse" href="#upcoming-calendar-panel">今後の配信</a>
+              <a data-bs-toggle="collapse" href="#upcoming-calendar-panel">今後の配信</a>
             </h4>
           </div>
           <div id="upcoming-calendar-panel" class="panel-collapse collapse show container">
@@ -170,10 +216,10 @@ body {
         <div class="panel panel-default">
           <div class="panel-heading">
             <h4 class="panel-title">
-              <a data-toggle="collapse" href="#ended-panel">終了した配信</a>
+              <a data-bs-toggle="collapse" href="#ended-calendar-panel">終了した配信</a>
             </h4>
           </div>
-          <div id="ended-panel" class="panel-collapse collapse container">
+          <div id="ended-calendar-panel" class="panel-collapse collapse container">
             <ul class="container row" id="ended-calendar">
               <li class="list-group-item event col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
                 Loading...
