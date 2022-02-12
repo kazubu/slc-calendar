@@ -1,0 +1,62 @@
+Metrics/CyclomaticComplexity:
+  Max: 10
+
+Metrics/ClassLength:
+  Max: 600
+
+Metrics/MethodLength:
+  Max: 50
+
+Metrics/ParameterLists:
+  Max: 6
+
+Layout/SpaceBeforeBlockBraces:
+  EnforcedStyle: no_space
+
+Layout/SpaceInsideBlockBraces:
+  SpaceBeforeBlockParameters: false
+
+Layout/LineLength:
+  Max: 200
+
+Style/NumericLiterals:
+  MinDigits: 6
+
+Style/Semicolon:
+  AllowAsExpressionSeparator: true
+
+Style/TernaryParentheses:
+  EnforcedStyle: require_parentheses_when_complex
+
+Style/AndOr:
+  EnforcedStyle: conditionals
+
+Style/AsciiComments:
+  Enabled: false
+
+Style/MethodCalledOnDoEndBlock:
+  Enabled: true
+
+Style/NumericPredicate:
+  Enabled: false
+
+Style/PreferredHashMethods:
+  EnforcedStyle: verbose
+
+Style/RedundantReturn:
+  AllowMultipleReturnValues: true
+
+Style/SafeNavigation:
+  Enabled: false
+
+Style/StringMethods:
+  Enabled: true
+
+Style/ZeroLengthPredicate:
+  Enabled: false
+
+AllCops:
+  Exclude:
+    - spec/spec_helper.rb
+  TargetRubyVersion: 2.7
+
