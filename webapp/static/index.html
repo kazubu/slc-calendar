@@ -63,26 +63,27 @@ $(function() {
   $.ajax({
     url: "./events",
     success: function( result ){
+      let upcoming_last_date = "";
+      let ended_last_date = "";
+      let onlive_html = '<li class="list-group-item bg-success text-light col-cs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">ただいま配信中！</li>';
+      let upcoming_html = "";
+      let ended_html = "";
+
       result = result.sort(function (a, b) {
         return Date.parse(a.start_date) - Date.parse(b.start_date);
       });
-      var upcoming_last_date = "";
-      var ended_last_date = "";
-      var onlive_html = '<li class="list-group-item bg-success text-light col-cs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">ただいま配信中！</li>';
-      var upcoming_html = "";
-      var ended_html = "";
 
       $.each(result, function(){
-        var html = '<li class="list-group-item event col-xs-6 col-sm-6 col-md-4 col-lg-3 col-xl-3">' +
+        const html = '<li class="list-group-item event col-xs-6 col-sm-4 col-md-4 col-lg-3 col-xl-3">' +
           `<div class="video_date">${dateToDateTimeStr(new Date(this.start_date))}～</div>` +
           `<a href="${this.live_url}" target="_blank" rel="noopener noreferrer">` +
-          `<img width="100%" src="${this.thumbnail_url}" />` +
+          `<img class="img-responsive" src="${this.thumbnail_url}" />` +
           `<p class="video_title">${this.video_title}</p>` +
           '</a>' +
           `<div class="channel_name">${this.channel_name}</div>`
           '</li>';
 
-        var date = dateToDateStr(new Date(this.start_date));
+        const date = dateToDateStr(new Date(this.start_date));
         if(this.live_ended == "true"){
           ended_html += separator_html(ended_last_date, date);
           ended_html += html;
@@ -97,6 +98,7 @@ $(function() {
           }
         }
       });
+
       $("#onlive-calendar").html(onlive_html);
       $("#upcoming-calendar-panel").html(upcoming_html + "</ul>");
       $("#ended-calendar-panel").html(ended_html + "</ul>");
@@ -108,6 +110,10 @@ $(function() {
     <style type="text/css">
 body {
   text-align: center;
+}
+
+img {
+  max-width: 100%;
 }
 
 .main {
@@ -138,7 +144,10 @@ body {
 }
 
 .video_title {
+  overflow-wrap: break-word;
+  word-break: break-word;
   font-size: small;
+    margin-bottom: 2rem;
 }
 
 .video_date {
@@ -147,9 +156,12 @@ body {
 }
 
 .channel_name {
+  overflow-wrap: break-word;
+  word-break: break-word;
   font-size: small;
   position: absolute;
   bottom: 0;
+    margin-bottom: 0.5rem;
 }
 
 #header_link { color: white; }
