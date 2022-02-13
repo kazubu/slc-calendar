@@ -190,8 +190,20 @@ img {
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1616178995872166" crossorigin="anonymous"></script>
   </head>
   <body>
-    <nav class="navbar navbar-dark bg-dark justify-content-center">
-      <div class="navbar-brand"><a href="" id="header_link">星チルカレンダー(β)</a></div>
+    <nav class="navbar navbar-dark fixed-top bg-dark">
+      <div class="container-fluid">
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <span class="navbar-toggler-icon"></span>
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <li><a class="dropdown-item" href="./">サムネイルあり</a></li>
+            <li><a class="dropdown-item" href="./index-lite.html">サムネイルなし</a></li>
+            <li><a class="dropdown-item" href="./index-google.html">Googleカレンダー版</a></li>
+          </ul>
+        </div>
+        <div class="navbar-brand col align-self-center"><a href="" id="header_link">星チルカレンダー(β)</a></div>
+      </div>
     </nav>
 
     <div class="main">
