@@ -55,8 +55,12 @@ module SLCCalendar
       def thumbnail_url
         return nil if thumbnails.nil? || thumbnails.count == 0
 
-        return thumbnails['standard']['url'] if thumbnails['standard']
+
+        # medium/maxres is 16:9
+        # default/high/standard is 4:3
+        return thumbnails['medium']['url'] if thumbnails['medium']
         return thumbnails['high']['url'] if thumbnails['high']
+        return thumbnails['standard']['url'] if thumbnails['standard']
         return thumbnails['maxres']['url'] if thumbnails['maxres']
 
         # return 1st thumbnail if above thumbnails are not found
