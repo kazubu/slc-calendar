@@ -12,6 +12,7 @@ Metrics/MethodLength:
 
 Metrics/ParameterLists:
   Max: 6
+  CountKeywordArgs: false
 
 Layout/SpaceBeforeBlockBraces:
   EnforcedStyle: no_space
@@ -48,9 +49,6 @@ Style/PreferredHashMethods:
 
 Style/RedundantReturn:
   AllowMultipleReturnValues: true
-
-Style/SafeNavigation:
-  Enabled: false
 
 Style/StringMethods:
   Enabled: true

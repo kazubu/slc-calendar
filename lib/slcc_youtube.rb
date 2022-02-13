@@ -53,8 +53,7 @@ module SLCCalendar
       end
 
       def thumbnail_url
-        return nil if thumbnails.nil? || thumbnails.count == 0
-
+        return nil if thumbnails.nil? || thumbnails.empty?
 
         # medium/maxres is 16:9
         # default/high/standard is 4:3
@@ -97,7 +96,7 @@ module SLCCalendar
         raise 'Video IDs should be Array or String'
       end
 
-      videos += get_videos_impl(video_id_array_to_video_ids(video_id_array.pop(50))) while video_id_array.length > 0
+      videos += get_videos_impl(video_id_array_to_video_ids(video_id_array.pop(50))) until video_id_array.empty?
 
       videos
     end
@@ -106,6 +105,12 @@ module SLCCalendar
 
     def video_id_array_to_video_ids(video_id_array)
       video_id_array.map{|x| Utils.url_to_video_id x }.join(',')
+    end
+
+    def timestring_to_time(time)
+      return nil unless time.is_a?(String)
+
+      Time.at(Time.parse(time).to_i / 60 * 60).getlocal('+09:00')
     end
 
     def get_videos_impl(video_ids)
@@ -129,9 +134,9 @@ module SLCCalendar
           video_id: v['id'],
           video_title: v['snippet']['title'],
           live_state: (v['snippet']['liveBroadcastContent'].nil? ? nil : v['snippet']['liveBroadcastContent']),
-          scheduled_start_time: ((v['liveStreamingDetails'].nil? || v['liveStreamingDetails']['scheduledStartTime'].nil?) ? nil : Time.at(Time.parse(v['liveStreamingDetails']['scheduledStartTime']).to_i / 60 * 60).getlocal('+09:00')),
-          actual_start_time: ((v['liveStreamingDetails'].nil? || v['liveStreamingDetails']['actualStartTime'].nil?) ? nil : Time.at(Time.parse(v['liveStreamingDetails']['actualStartTime']).to_i / 60 * 60).getlocal('+09:00')),
-          actual_end_time: ((v['liveStreamingDetails'].nil? || v['liveStreamingDetails']['actualEndTime'].nil?) ? nil : Time.at(Time.parse(v['liveStreamingDetails']['actualEndTime']).to_i / 60 * 60).getlocal('+09:00')),
+          scheduled_start_time: (v.dig('liveStreamingDetails', 'scheduledStartTime').nil? ? nil : timestring_to_time(v['liveStreamingDetails']['scheduledStartTime'])),
+          actual_start_time: (v.dig('liveStreamingDetails', 'actualStartTime').nil? ? nil : timestring_to_time(v['liveStreamingDetails']['actualStartTime'])),
+          actual_end_time: (v.dig('liveStreamingDetails', 'actualEndTime').nil? ? nil : timestring_to_time(v['liveStreamingDetails']['actualEndTime'])),
           thumbnails: v['snippet']['thumbnails']
         )
       end
@@ -150,11 +155,9 @@ module SLCCalendar
       end
 
       if res['error']
-        if res ['error']['errors'][0] && res['error']['errors'][0]['reason']
-          raise "Received error from YouTube. Reason: #{res['error']['errors'][0]['reason']}"
-        else
-          raise 'Received unknown error from YouTube'
-        end
+        raise "Received error from YouTube. Reason: #{res['error']['errors'][0]['reason']}" if res ['error']['errors'][0] && res['error']['errors'][0]['reason']
+
+        raise 'Received unknown error from YouTube'
       end
 
       res

@@ -2,7 +2,6 @@
 # frozen_string_literal: true
 
 require 'twitter'
-require 'nkf'
 
 require_relative './slcc_youtube'
 
@@ -86,7 +85,7 @@ module SLCCalendar
         end
       end
 
-      return ids if ids.length > 0
+      return ids unless ids.empty?
 
       false
     end
@@ -112,7 +111,6 @@ module SLCCalendar
         tweets_count += 1
         last_id = tweet.id
         latest_id = tweet.id if latest_id.nil? || latest_id < tweet.id
-        text = NKF.nkf('-w -Z4', tweet.full_text)
 
         next unless tweet.in_reply_to_status_id.nil? # Skip a reply to any tweet
         next unless tweet.retweeted_status.nil? # Skip RT
@@ -131,7 +129,8 @@ module SLCCalendar
 
         # only recent tweet for same video url
         tweet_announces.each do |aa|
-          next if aa[:video_id] && (announces.select{|a| a[:video_id] && a[:video_id] == aa[:video_id] }.length > 0)
+          next if aa[:video_id] &&
+                  !announces.select{|a| a[:video_id] && a[:video_id] == aa[:video_id] }.empty?
 
           announces << aa
         end

@@ -24,68 +24,70 @@ module SLCCalendar
     end
 
     # return true if event info is same
-    def compare_events(ev, nev)
-      return false if ev.summary != nev.summary
-      return false if ev.description != nev.description
-      return false if ev.start.date_time != nev.start.date_time
-      return false if ev.end.date_time != nev.end.date_time
+    def compare_events(event, new_event)
+      return false if event.summary != new_event.summary
+      return false if event.description != new_event.description
+      return false if event.start.date_time != new_event.start.date_time
+      return false if event.end.date_time != new_event.end.date_time
 
-      if ev.extended_properties
-        return false if nev.extended_properties.nil?
+      if event.extended_properties
+        return false if new_event.extended_properties.nil?
 
-        if ev.extended_properties.shared
-          return false if nev.extended_properties.shared.nil?
-          return false if ev.extended_properties.shared != nev.extended_properties.shared
-        elsif nev.extended_properties.shared
+        if event.extended_properties.shared
+          return false if new_event.extended_properties.shared.nil?
+          return false if event.extended_properties.shared != new_event.extended_properties.shared
+        elsif new_event.extended_properties.shared
           return false
         end
-        if ev.extended_properties.private
-          return false if nev.extended_properties.private.nil?
-          return false if ev.extended_properties.private != nev.extended_properties.private
-        elsif nev.extended_properties.private
+        if event.extended_properties.private
+          return false if new_event.extended_properties.private.nil?
+          return false if event.extended_properties.private != new_event.extended_properties.private
+        elsif new_event.extended_properties.private
           return false
         end
-      elsif nev.extended_properties
+      elsif new_event.extended_properties
         return false
       end
 
       true
     end
 
-    def is_live_ended(e)
-      return true if e.description[-2, 2] == '##'
-      return true if e.extended_properties && e.extended_properties.shared && e.extended_properties.shared['live_ended'] && e.extended_properties.shared['live_ended'] == 'true'
+    def is_live_ended(event)
+      return true if event.description[-2, 2] == '##'
+      return true if event&.extended_properties&.shared && event.extended_properties.shared['live_ended'] && event.extended_properties.shared['live_ended'] == 'true'
 
       false
     end
 
-    def gen_event(sc)
-      title = "#{sc.video.channel_title}: #{sc.video.video_title}"
-      description = gen_description(sc)
+    def gen_event(schedule)
+      title = "#{schedule.video.channel_title}: #{schedule.video.video_title}"
+      description = gen_description(schedule)
 
-      start_time = DateTime.parse(sc.video.scheduled_start_time.to_s) if sc.video.scheduled_start_time
-      start_time = DateTime.parse(sc.video.actual_start_time.to_s) if start_time.nil? || (sc.video.actual_start_time && (sc.video.actual_start_time - sc.video.scheduled_start_time).floor.abs > 600)
+      start_time = DateTime.parse(schedule.video.scheduled_start_time.to_s) if schedule.video.scheduled_start_time
+      if start_time.nil? || (schedule.video.actual_start_time && (schedule.video.actual_start_time - schedule.video.scheduled_start_time).floor.abs > 600)
+        start_time = DateTime.parse(schedule.video.actual_start_time.to_s)
+      end
 
       raise 'Start date is not found' unless start_time
 
-      end_time = if sc.video.actual_end_time
-                   DateTime.parse(sc.video.actual_end_time.to_s)
+      end_time = if schedule.video.actual_end_time
+                   DateTime.parse(schedule.video.actual_end_time.to_s)
                  else
                    start_time + Rational(1, 24)
                  end
 
-      thumbnail_url = sc.video.thumbnail_url
-      live_ended = !sc.video.upcoming_stream?
-      live_url = sc.video.video_url
-      on_live = sc.video.live_state == 'live'
+      thumbnail_url = schedule.video.thumbnail_url
+      live_ended = !schedule.video.upcoming_stream?
+      live_url = schedule.video.video_url
+      on_live = schedule.video.live_state == 'live'
       ep = Google::Apis::CalendarV3::Event::ExtendedProperties.new({
                                                                      shared: {
                                                                        'thumbnail_url' => thumbnail_url,
                                                                        'live_ended' => (live_ended ? 'true' : 'false'),
                                                                        'live_url' => live_url,
                                                                        'on_live' => (on_live ? 'true' : 'false'),
-                                                                       'channel_name' => sc.video.channel_title,
-                                                                       'video_title' => sc.video.video_title
+                                                                       'channel_name' => schedule.video.channel_title,
+                                                                       'video_title' => schedule.video.video_title
                                                                      }
                                                                    })
 
@@ -111,20 +113,20 @@ module SLCCalendar
       events.items
     end
 
-    def create(sc)
-      return if sc.nil?
+    def create(schedule)
+      return if schedule.nil?
 
-      event = gen_event(sc)
+      event = gen_event(schedule)
       @service.insert_event(
         @calendar_id,
         event
       )
     end
 
-    def update(event_id, sc)
-      return if sc.nil?
+    def update(event_id, schedule)
+      return if schedule.nil?
 
-      event = gen_event(sc)
+      event = gen_event(schedule)
       @service.update_event(
         @calendar_id,
         event_id,
@@ -132,13 +134,13 @@ module SLCCalendar
       )
     end
 
-    def update_event(ev)
-      return if ev.nil?
+    def update_event(event)
+      return if event.nil?
 
       @service.update_event(
         @calendar_id,
-        ev.id,
-        ev
+        event.id,
+        event
       )
     end
 
@@ -164,19 +166,19 @@ module SLCCalendar
       "<a href=\"#{url}\"target=\"_blank\">#{url}</a>"
     end
 
-    def gen_description(sc)
+    def gen_description(schedule)
       tweet_url = nil
-      if sc.tweet.is_a?(String)
-        tweet_url = sc.tweet
-      elsif sc.tweet.uri
-        tweet_url = sc.tweet.uri
+      if schedule.tweet.is_a?(String)
+        tweet_url = schedule.tweet
+      elsif schedule.tweet.uri
+        tweet_url = schedule.tweet.uri
       end
 
       ret = +''
-      ret += "チャンネル: #{sc.video.channel_title}\n"
-      ret += "タイトル: #{sc.video.video_title}\n"
-      ret += "\n" if sc.video.video_url
-      ret += "配信URL: #{a(sc.video.video_url)}\n" if sc.video.video_url
+      ret += "チャンネル: #{schedule.video.channel_title}\n"
+      ret += "タイトル: #{schedule.video.video_title}\n"
+      ret += "\n" if schedule.video.video_url
+      ret += "配信URL: #{a(schedule.video.video_url)}\n" if schedule.video.video_url
       ret += "\n" if tweet_url
       ret += "告知ツイート: #{a(tweet_url)}\n" if tweet_url
 
