@@ -4,11 +4,12 @@
     <meta charset="utf-8"></meta>
     <meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1"></meta>
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>星チルカレンダー(β)</title>
+    <title>星チルカレンダー</title>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 
     <script type="text/javascript">
@@ -172,6 +173,10 @@ img {
   margin-bottom: 0.5rem;
 }
 
+.dropdown-toggle::after {
+      display: none;
+}
+
 #header_link { color: white; text-decoration: none; }
 #footer_link { color: gray; text-decoration: none; }
 
@@ -192,7 +197,7 @@ img {
   <body>
     <nav class="navbar navbar-dark fixed-top bg-dark">
       <div class="container-fluid">
-        <div class="nav-item dropdown align-self-left">
+        <div class="nav-item col-1 dropdown align-self-left">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
           <span class="navbar-toggler-icon"></span>
           </a>
@@ -202,7 +207,12 @@ img {
             <li><a class="dropdown-item" href="./index-google.html">Googleカレンダー版</a></li>
           </ul>
         </div>
-        <div class="navbar-brand col align-self-center"><a href="" id="header_link">星チルカレンダー(β)</a></div>
+        <div class="navbar-brand col-6 align-self-center"><a href="" id="header_link">星チルカレンダー</a></div>
+        <div class="nav-item col-1 align-self-right">
+          <a href="">
+            <i class="bi bi-arrow-clockwise" style="color: gray"></i>
+          </a>
+        </div>
       </div>
     </nav>
 
