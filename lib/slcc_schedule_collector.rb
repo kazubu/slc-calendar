@@ -136,9 +136,9 @@ module SLCCalendar
         end
       end
 
-      puts "Collected tweets: #{tweets_count}"
-      puts "Collected announces: #{announces.length}"
-      puts "Latest id: #{latest_id}"
+      $logger.info "Collected tweets: #{tweets_count}"
+      $logger.info "Collected announces: #{announces.length}"
+      $logger.info "Latest id: #{latest_id}"
 
       return announces, latest_id
     end

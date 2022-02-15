@@ -1,9 +1,13 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+require 'logger'
+
 require_relative '../config'
 require_relative './slcc_schedule_collector'
 require_relative './slcc_calendar'
+
+$logger = Logger.new(STDOUT)
 
 module SLCCalendar
   class Updater
@@ -44,6 +48,7 @@ module SLCCalendar
       end
 
       current_events = calendar.events
+      $logger.info "#{current_events.count} events are found on Calendar."
 
       schedules.each do |sc|
         event_id = nil
@@ -57,25 +62,27 @@ module SLCCalendar
           nev = calendar.gen_event(sc)
           if calendar.compare_events(ev, nev)
             skip_count += 1
-            calendar.puts_event(ev, message: 'SKIP')
+            $logger.info 'SKIP: ' + calendar.event_summary(ev)
           else
             update_count += 1
-            calendar.puts_event(calendar.update(event_id, sc), message: 'UPDATE')
+            $logger.info 'UPDATE: ' + calendar.event_summary(calendar.update(event_id, sc))
           end
         else
           # no existing events
           create_count += 1
-          calendar.puts_event(calendar.create(sc), message: 'CREATE')
+          $logger.info 'CREATE: ' + calendar.event_summary(calendar.create(sc))
         end
       end
 
       begin
         File.write(TWITTER_LATEST_ID_STORE, latest_id_list.to_json)
-      rescue StandardError
-        puts 'Failed to write latest id list'
+      rescue StandardError => e
+        $logger.warn 'Failed to write latest id list'
+        $logger.error e.message
+        $logger.error e.backtrace.join("\n")
       end
 
-      puts "#{create_count} created; #{update_count} updated; #{skip_count} skipped;"
+      $logger.info "#{create_count} created; #{update_count} updated; #{skip_count} skipped;"
     end
 
     # 配信URLをチェックして時間だけアップデートする
@@ -87,6 +94,7 @@ module SLCCalendar
       calendar = SLCCalendar::Calendar.new
 
       current_events = calendar.events(2, 120)
+      $logger.info "#{current_events.count} events are found on Calendar."
 
       events = []
       current_events.each do |e|
@@ -117,12 +125,12 @@ module SLCCalendar
         if video.nil?
           # need to update existing event if live is deleted due to can't generate new event without video detail.
           e[:event].description = "#{e[:event].description}##"
-          calendar.puts_event(calendar.update_event(e[:event]), message: 'ENDED')
+          $logger.info 'ENDED: ' + calendar.event_summary(calendar.update_event(e[:event]))
           ended_count += 1
           next
         elsif !video.upcoming_stream?
           # live is finished. generate new event
-          calendar.puts_event(calendar.update(e[:event].id, sc), message: 'ENDED')
+          $logger.info 'ENDED: ' + calendar.event_summary(calendar.update(e[:event].id, sc))
           ended_count += 1
           next
         end
@@ -131,14 +139,14 @@ module SLCCalendar
         nev = calendar.gen_event(sc)
         if calendar.compare_events(e[:event], nev)
           skip_count += 1
-          calendar.puts_event(e[:event], message: 'SKIP')
+          $logger.info 'SKIP: ' + calendar.event_summary(e[:event])
         else
           update_count += 1
-          calendar.puts_event(calendar.update(e[:event].id, sc), message: 'UPDATE')
+          $logger.info 'UPDATE: ' + calendar.event_summary(calendar.update(e[:event].id, sc))
         end
       end
 
-      puts "#{update_count} updated; #{skip_count} skipped; #{ended_count} ended;"
+      $logger.info "#{update_count} updated; #{skip_count} skipped; #{ended_count} ended;"
     end
 
     def force_register(video_id)
@@ -147,19 +155,19 @@ module SLCCalendar
       current_events = c.events(10, 30)
 
       if current_events.find{|x| x.description.index(video_id) }
-        puts 'This video is exists.'
+        $logger.info 'This video is exists.'
         return false
       end
 
       video = @youtube.get_videos(video_id)[0]
       unless video
-        puts 'Invalid video id?'
+        $logger.error 'Invalid video id?'
         return false
       end
 
       sc = Schedule.new(video: video, tweet: nil)
 
-      c.puts_event(c.create(sc), message: 'CREATE')
+      $logger.info 'CREATE: ' + c.event_summary(c.create(sc))
     end
   end
 end
