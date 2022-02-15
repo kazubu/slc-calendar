@@ -67,11 +67,13 @@ $(function() {
       let no_upcoming_html = '<ul class="container row"><li class="list-group-item bg-dark text-light col-cs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">配信予定のライブはありません。</li></ul>';
       let ended_html = "";
 
-      result = result.sort(function (a, b) {
+      updated_at = result.updated_at;
+      $("#updated_at").html(`最終更新: ${dateToDateTimeStr(new Date(updated_at))}`);
+      const events = result.events.sort(function (a, b) {
         return Date.parse(a.start_date) - Date.parse(b.start_date);
       });
 
-      $.each(result, function(){
+      $.each(events, function(){
         const html = '<li class="list-group-item event col-xs-6 col-sm-4 col-md-4 col-lg-3 col-xl-3">' +
           `<div class="video_date">${dateToDateTimeStr(new Date(this.start_date))}～</div>` +
           `<a href="${this.live_url}" target="_blank" rel="noopener noreferrer">` +
@@ -217,6 +219,8 @@ img {
     </nav>
 
     <div class="main">
+      <div id="updated_at" style="text-align: left; font-size: x-small">
+      </div>
       <div class="panel-group">
         <div class="panel panel-default">
           <div class="panel-heading">

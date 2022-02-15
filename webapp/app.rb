@@ -44,9 +44,14 @@ get '/' do
   calendar = SLCCalendar::Calendar.new
   current_events = calendar.events(1, 120)
   events = []
+  updated_at = nil
   current_events.each do |e|
     events << event2hash(e)
+    updated_at = e.updated if updated_at.nil? || updated_at < e.updated
   end
 
-  return events.to_json
+  {
+    events: events,
+    updated_at: updated_at.to_s
+  }.to_json
 end
