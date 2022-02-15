@@ -15,12 +15,12 @@ module SLCCalendar
       @calendar_id = GOOGLE_CALENDAR_ID
     end
 
-    def puts_event(event, message: nil)
-      print "#{message}\t" if message
-      print "summary: #{event.summary},"
-      print " calendar_id: #{event.id},"
-      print " start_time: #{event.start.date_time},"
-      print " end_time: #{event.end.date_time}\n"
+    def event_summary(event)
+      s = "summary: #{event.summary},"
+      s += " calendar_id: #{event.id},"
+      s += " start_time: #{event.start.date_time},"
+      s += " end_time: #{event.end.date_time}\n"
+      s
     end
 
     # return true if event info is same
@@ -109,7 +109,6 @@ module SLCCalendar
                                     time_min: (Time.now - past * 24 * 60 * 60).iso8601,
                                     time_max: (Time.now + future * 24 * 60 * 60).iso8601)
 
-      puts "#{events.items.length} events received"
       events.items
     end
 
