@@ -4,8 +4,11 @@
 require_relative 'lib/slcc_updater'
 
 $logger.info "Process Start: #{Time.now}"
+
 $logger.info '# Update by tweet'
 SLCCalendar::Updater.new.update_by_tweets
+
 $logger.info '# Update existing schedules'
 SLCCalendar::Updater.new.update_registered_events
+
 $logger.info "Process Finished: #{Time.now}"

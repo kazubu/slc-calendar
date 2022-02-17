@@ -4,6 +4,8 @@
 require_relative 'lib/slcc_updater'
 
 puts "Process Start: #{Time.now}"
+
 puts '# Update by tweet'
 SLCCalendar::Updater.new.update_by_tweets
+
 puts "Process Finished: #{Time.now}"
