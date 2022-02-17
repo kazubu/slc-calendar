@@ -124,7 +124,13 @@ module SLCCalendar
         # live is finished after last execution
         if video.nil?
           # need to update existing event if live is deleted due to can't generate new event without video detail.
-          e[:event].description = "#{e[:event].description}##"
+          if e[:event].extended_properties.shared
+            e[:event].extended_properties.shared['live_deleted'] = true
+            e[:event].extended_properties.shared['live_ended'] = true
+            e[:event].extended_properties.shared['on_live'] = false
+          else
+            e[:event].description = "#{e[:event].description}##"
+          end
           $logger.info 'ENDED: ' + calendar.event_summary(calendar.update_event(e[:event]))
           ended_count += 1
           next
