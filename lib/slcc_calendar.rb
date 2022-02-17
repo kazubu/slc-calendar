@@ -19,7 +19,7 @@ module SLCCalendar
       s = "summary: #{event.summary},"
       s += " calendar_id: #{event.id},"
       s += " start_time: #{event.start.date_time},"
-      s += " end_time: #{event.end.date_time}\n"
+      s += " end_time: #{event.end.date_time}"
       s
     end
 
