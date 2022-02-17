@@ -1,6 +1,6 @@
 # SLC Calendar
 
-The purpose of this program is to retrieve upcoming live broadcasts on YouTube from the Twitter list and register them as schedules in Google Calendar so that you can easily check the schedule of the broadcasts.
+The purpose of this program is to retrieve upcoming live broadcasts on YouTube from tweets on Twitter lists and register them as schedules in Google Calendar to easily check the schedule of the live broadcasts.
 
 ## Install
 
@@ -21,5 +21,25 @@ Then you can execute `update`, `update_by_tweets` or `update_registered` command
  - `update_registered` command checks already registered events in Google Calendar and reflects the changes of the livestream.
  - `update` command runs both above actions in sequence.
 
+## Web Frontend
 
+Simple web frontend is located on webapp dir.
+You can check the schedules by web browsers.
+
+Apache + Passenger example:
+
+```
+    RackBaseURI /slc-calendar/events
+
+    Alias /slc-calendar/events /opt/slc-calendar/webapp
+    <Location /slc-calendar/events>
+        PassengerBaseURI /slc-calendar/events
+        PassengerAppRoot /opt/slc-calendar/webapp
+    </Location>
+    <Directory /opt/slc-calendar/webapp>
+        Allow from all
+        Options -MultiViews
+        Require all granted
+    </Directory>
+```
 
