@@ -74,14 +74,24 @@ $(function() {
       });
 
       $.each(events, function(){
-        const html = '<li class="list-group-item event col-xs-6 col-sm-4 col-md-4 col-lg-3 col-xl-3">' +
-          `<div class="video_date">${dateToDateTimeStr(new Date(this.start_date))}～</div>` +
-          `<a href="${this.live_url}" target="_blank" rel="noopener noreferrer">` +
-          `<img class="img-thumbnail" src="${this.thumbnail_url}" />` +
-          `<p class="video_title">${this.video_title}</p>` +
-          '</a>' +
-          `<div class="channel_name">${this.channel_name}</div>`
-          '</li>';
+        let html = '<li class="list-group-item event col-xs-6 col-sm-4 col-md-4 col-lg-3 col-xl-3">';
+        html += `<div class="video_date">${dateToDateTimeStr(new Date(this.start_date))}～</div>`;
+
+        if(this.tweet_url != ""){
+          html += '<div class="twitter_icon">';
+          html += `<a href="${this.tweet_url}" target="_blank" rel="noopener noreferrer">`;
+          html += '<i style="color: gray" class="bi bi-twitter"></i>';
+          html += '</a>';
+          html += '</div>';
+        }
+
+        html += `<a href="${this.live_url}" target="_blank" rel="noopener noreferrer">`;
+        html += `<img class="img-thumbnail" src="${this.thumbnail_url}" />`;
+        html += `<p class="video_title">${this.video_title}</p>`;
+        html += '</a>';
+
+        html += `<div class="channel_name">${this.channel_name}</div>`;
+        html += '</li>';
 
         const date = dateToDateStr(new Date(this.start_date));
         if(this.live_ended == "true"){
@@ -164,6 +174,12 @@ img {
 .video_date {
   text-align: left;
   font-size: small;
+}
+
+.twitter_icon {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
 }
 
 .channel_name {
