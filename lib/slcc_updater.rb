@@ -86,7 +86,7 @@ module SLCCalendar
     end
 
     # 配信URLをチェックして時間だけアップデートする
-    def update_registered_events
+    def update_registered_events(force: false)
       update_count = 0
       skip_count = 0
       ended_count = 0
@@ -100,7 +100,7 @@ module SLCCalendar
       current_events.each do |e|
         if calendar.is_live_ended(e)
           ended_count += 1
-          next
+          next unless force
         end
 
         next unless e.description.index('/watch?v=')
@@ -108,7 +108,11 @@ module SLCCalendar
         video_id = e.description.split('/watch?v=')[1].split('"')[0]
 
         tweet_url = nil
-        tweet_url = "https://twitter.com/#{e.description.split('twitter.com/')[1].split('"')[0]}" if e.description.index('twitter.com/')
+        if e&.extended_properties&.shared && e.extended_properties.shared['tweet_url']
+          tweet_url = e.extended_properties.shared['tweet_url']
+        else
+          tweet_url = "https://twitter.com/#{e.description.split('twitter.com/')[1].split('"')[0]}" if e.description.index('twitter.com/')
+        end
 
         events << { event: e, video_id: video_id, tweet_url: tweet_url }
       end
