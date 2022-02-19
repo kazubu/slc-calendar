@@ -72,6 +72,10 @@ module SLCCalendar
         false
       end
 
+      def live?
+        !@live_state.nil?
+      end
+
       def update
         x = @youtube.get_videos(video_id)[0]
         x.instance_variables.each{|k| instance_variable_set(k, x.instance_variable_get(k)) }
@@ -133,7 +137,7 @@ module SLCCalendar
           channel_title: v['snippet']['channelTitle'],
           video_id: v['id'],
           video_title: v['snippet']['title'],
-          live_state: (v['snippet']['liveBroadcastContent'].nil? ? nil : v['snippet']['liveBroadcastContent']),
+          live_state: ((v['snippet']['liveBroadcastContent'].nil? || v['liveStreamingDetails'].nil?) ? nil : v['snippet']['liveBroadcastContent']),
           scheduled_start_time: (v.dig('liveStreamingDetails', 'scheduledStartTime').nil? ? nil : timestring_to_time(v['liveStreamingDetails']['scheduledStartTime'])),
           actual_start_time: (v.dig('liveStreamingDetails', 'actualStartTime').nil? ? nil : timestring_to_time(v['liveStreamingDetails']['actualStartTime'])),
           actual_end_time: (v.dig('liveStreamingDetails', 'actualEndTime').nil? ? nil : timestring_to_time(v['liveStreamingDetails']['actualEndTime'])),
