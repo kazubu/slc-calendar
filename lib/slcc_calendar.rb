@@ -80,7 +80,7 @@ module SLCCalendar
       if schedule.tweet.is_a?(String)
         tweet_url = schedule.tweet
       elsif schedule.tweet.uri
-        tweet_url = schedule.tweet.uri
+        tweet_url = schedule.tweet.uri.to_s
       end
 
       thumbnail_url = schedule.video.thumbnail_url
@@ -178,7 +178,7 @@ module SLCCalendar
       if schedule.tweet.is_a?(String)
         tweet_url = schedule.tweet
       elsif schedule.tweet.uri
-        tweet_url = schedule.tweet.uri
+        tweet_url = schedule.tweet.uri.to_s
       end
 
       ret = +''
