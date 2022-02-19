@@ -45,7 +45,7 @@ module SLCCalendar
       @youtube_data_api_key = youtube_data_api_key
     end
 
-    def get_schedules(twitter_id, list_id, since_id: nil)
+    def get_schedules(twitter_id, list_id, since_id: nil, include_ended: false)
       announces, latest_id = collect_announces(twitter_id, list_id, since_id: since_id)
       @latest_tweet_id = latest_id
 
@@ -60,7 +60,7 @@ module SLCCalendar
 
       announces.each do |a|
         video = videos.find{|v| v.video_id == a[:video_id] }
-        next if video.nil? || !video.upcoming_stream?
+        next if video.nil? || !video.live? || (!include_ended && !video.upcoming_stream?)
 
         schedules << Schedule.new(video: video, tweet: a[:tweet])
       end
@@ -101,7 +101,6 @@ module SLCCalendar
 
       tweets_count = 0
 
-      last_id = nil
       option = { count: 1000, tweet_mode: 'extended' }
       option[:since_id] = since_id if since_id
 
@@ -109,13 +108,25 @@ module SLCCalendar
 
       client.list_timeline(twitter_user, list_id, option).each do |tweet|
         tweets_count += 1
-        last_id = tweet.id
         latest_id = tweet.id if latest_id.nil? || latest_id < tweet.id
 
         next unless tweet.in_reply_to_status_id.nil? # Skip a reply to any tweet
         next unless tweet.retweeted_status.nil? # Skip RT
 
         video_ids = extract_youtube_video_ids(tweet)
+        unless video_ids
+          if tweet.uris? && tweet.uris[0].expanded_url.to_s.index('https://twitter.com/') &&  tweet.uris[0].expanded_url.to_s.index('/status/') && tweet.full_text.index('コラボ')
+            begin
+              new_tweet = client.status(tweet.uris[0].expanded_url, { tweet_mode: 'extended' })
+            rescue Twitter::Error::NotFound => e
+              $logger.warn "Quoted tweet isn't exist. Skip."
+              next
+            end
+            $logger.info "Collaboration is detected. Checking quoted tweet: #{new_tweet.id}"
+            video_ids = extract_youtube_video_ids(new_tweet)
+          end
+        end
+
         next unless video_ids
 
         tweet_announces = []
