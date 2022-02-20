@@ -115,14 +115,9 @@ module SLCCalendar
 
         video_ids = extract_youtube_video_ids(tweet)
         unless video_ids
-          if tweet.uris? && tweet.uris[0].expanded_url.to_s.index('https://twitter.com/') &&  tweet.uris[0].expanded_url.to_s.index('/status/') && tweet.full_text.index('コラボ')
-            begin
-              new_tweet = client.status(tweet.uris[0].expanded_url, { tweet_mode: 'extended' })
-            rescue Twitter::Error::NotFound => e
-              $logger.warn "Quoted tweet isn't exist. Skip."
-              next
-            end
-            $logger.info "Collaboration is detected. Checking quoted tweet: #{new_tweet.id}"
+          if tweet.quoted_tweet? && tweet.full_text.index('コラボ')
+            new_tweet = tweet.quoted_tweet
+            $logger.info "Collaboration is detected in tweet: #{tweet.id}. Checking quoted tweet: #{new_tweet.id}"
             video_ids = extract_youtube_video_ids(new_tweet)
           end
         end
