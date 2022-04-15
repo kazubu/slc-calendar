@@ -68,13 +68,9 @@ module SLCCalendar
       schedules
     end
 
-    private
-
     def extract_youtube_video_ids(tweet)
       youtube_url_lists = ['youtu.be', 'youtube.com']
       ids = []
-
-      return false if tweet.urls.count <= 0
 
       tweet.urls.each do |u|
         youtube_url_lists.each do |y|
@@ -85,10 +81,25 @@ module SLCCalendar
         end
       end
 
-      return ids unless ids.empty?
-
-      false
+      return ids
     end
+
+    def get_collabo_video_ids(tweet)
+      video_ids = []
+      if tweet.quoted_tweet?
+        new_tweet = tweet.quoted_tweet
+        if tweet.full_text.index('コラボ')
+          $logger.info "Collaboration is detected in tweet: #{tweet.id}. Checking quoted tweet: #{new_tweet.id}."
+          video_ids = extract_youtube_video_ids(new_tweet)
+        elsif new_tweet.full_text.index(tweet.user.screen_name)
+          $logger.info "Quoted tweet includes the screen name of original tweet user. Original tweet: #{tweet.id}. Checking quoted tweet: #{new_tweet.id}."
+          video_ids = extract_youtube_video_ids(new_tweet)
+        end
+      end
+      return video_ids
+    end
+
+    private
 
     def collect_announces(twitter_user, list_id, since_id: nil)
       client = Twitter::REST::Client.new do |config|
@@ -114,15 +125,9 @@ module SLCCalendar
         next unless tweet.retweeted_status.nil? # Skip RT
 
         video_ids = extract_youtube_video_ids(tweet)
-        unless video_ids
-          if tweet.quoted_tweet? && tweet.full_text.index('コラボ')
-            new_tweet = tweet.quoted_tweet
-            $logger.info "Collaboration is detected in tweet: #{tweet.id}. Checking quoted tweet: #{new_tweet.id}"
-            video_ids = extract_youtube_video_ids(new_tweet)
-          end
-        end
+        video_ids = get_collabo_video_ids(tweet) if video_ids.empty?
 
-        next unless video_ids
+        next if video_ids.empty?
 
         tweet_announces = []
 
