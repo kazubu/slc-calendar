@@ -121,7 +121,7 @@ module SLCCalendar
         tweets_count += 1
         latest_id = tweet.id if latest_id.nil? || latest_id < tweet.id
 
-        next unless tweet.in_reply_to_status_id.nil? # Skip a reply to any tweet
+        next if !tweet.in_reply_to_status_id.nil? && tweet.in_reply_to_user_id != tweet.user.id # Skip a reply to others tweet
         next unless tweet.retweeted_status.nil? # Skip RT
 
         video_ids = extract_youtube_video_ids(tweet)
