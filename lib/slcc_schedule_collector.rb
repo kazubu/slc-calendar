@@ -88,7 +88,7 @@ module SLCCalendar
       video_ids = []
       if tweet.quoted_tweet?
         new_tweet = tweet.quoted_tweet
-        if tweet.full_text.index('コラボ')
+        if tweet.full_text.index('コラボ') || tweet.full_text.index('こらぼ')
           $logger.info "Collaboration is detected in tweet: #{tweet.id}. Checking quoted tweet: #{new_tweet.id}."
           video_ids = extract_youtube_video_ids(new_tweet)
         elsif new_tweet.full_text.index(tweet.user.screen_name)
