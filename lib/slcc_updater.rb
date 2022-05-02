@@ -7,7 +7,7 @@ require_relative '../config'
 require_relative './slcc_schedule_collector'
 require_relative './slcc_calendar'
 
-$logger = Logger.new(STDOUT)
+$logger = Logger.new($stdout)
 
 module SLCCalendar
   class Updater
@@ -62,15 +62,15 @@ module SLCCalendar
           nev = calendar.gen_event(sc)
           if calendar.compare_events(ev, nev)
             skip_count += 1
-            $logger.info 'SKIP: ' + calendar.event_summary(ev)
+            $logger.info "SKIP: #{calendar.event_summary(ev)}"
           else
             update_count += 1
-            $logger.info 'UPDATE: ' + calendar.event_summary(calendar.update(event_id, sc))
+            $logger.info "UPDATE: #{calendar.event_summary(calendar.update(event_id, sc))}"
           end
         else
           # no existing events
           create_count += 1
-          $logger.info 'CREATE: ' + calendar.event_summary(calendar.create(sc))
+          $logger.info "CREATE: #{calendar.event_summary(calendar.create(sc))}"
         end
       end
 
@@ -110,8 +110,8 @@ module SLCCalendar
         tweet_url = nil
         if e&.extended_properties&.shared && e.extended_properties.shared['tweet_url']
           tweet_url = e.extended_properties.shared['tweet_url']
-        else
-          tweet_url = "https://twitter.com/#{e.description.split('twitter.com/')[1].split('"')[0]}" if e.description.index('twitter.com/')
+        elsif e.description.index('twitter.com/')
+          tweet_url = "https://twitter.com/#{e.description.split('twitter.com/')[1].split('"')[0]}"
         end
 
         events << { event: e, video_id: video_id, tweet_url: tweet_url }
@@ -135,12 +135,12 @@ module SLCCalendar
           else
             e[:event].description = "#{e[:event].description}##"
           end
-          $logger.info 'ENDED: ' + calendar.event_summary(calendar.update_event(e[:event]))
+          $logger.info "ENDED: #{calendar.event_summary(calendar.update_event(e[:event]))}"
           ended_count += 1
           next
         elsif !video.upcoming_stream?
           # live is finished. generate new event
-          $logger.info 'ENDED: ' + calendar.event_summary(calendar.update(e[:event].id, sc))
+          $logger.info "ENDED: #{calendar.event_summary(calendar.update(e[:event].id, sc))}"
           ended_count += 1
           next
         end
@@ -149,10 +149,10 @@ module SLCCalendar
         nev = calendar.gen_event(sc)
         if calendar.compare_events(e[:event], nev)
           skip_count += 1
-          $logger.info 'SKIP: ' + calendar.event_summary(e[:event])
+          $logger.info "SKIP: #{calendar.event_summary(e[:event])}"
         else
           update_count += 1
-          $logger.info 'UPDATE: ' + calendar.event_summary(calendar.update(e[:event].id, sc))
+          $logger.info "UPDATE: #{calendar.event_summary(calendar.update(e[:event].id, sc))}"
         end
       end
 
@@ -177,7 +177,7 @@ module SLCCalendar
 
       sc = Schedule.new(video: video, tweet: nil)
 
-      $logger.info 'CREATE: ' + c.event_summary(c.create(sc))
+      $logger.info "CREATE: #{c.event_summary(c.create(sc))}"
     end
   end
 end

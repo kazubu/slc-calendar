@@ -81,7 +81,7 @@ module SLCCalendar
         end
       end
 
-      return ids
+      ids
     end
 
     def get_collabo_video_ids(tweet)
@@ -96,7 +96,7 @@ module SLCCalendar
           video_ids = extract_youtube_video_ids(new_tweet)
         end
       end
-      return video_ids
+      video_ids
     end
 
     private
