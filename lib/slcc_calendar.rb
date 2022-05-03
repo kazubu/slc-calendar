@@ -116,6 +116,7 @@ module SLCCalendar
 
     def events(past = 7, future = 120)
       events = @service.list_events(@calendar_id,
+                                    max_results: 2500,
                                     time_min: (Time.now - past * 24 * 60 * 60).iso8601,
                                     time_max: (Time.now + future * 24 * 60 * 60).iso8601)
 
