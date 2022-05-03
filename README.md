@@ -2,6 +2,8 @@
 
 The purpose of this program is to retrieve upcoming live broadcasts on YouTube from tweets on Twitter lists and register them as schedules in Google Calendar to easily check the schedule of the live broadcasts.
 
+This program is intended to provide [星チルカレンダー](https://kazubu.jp/slcc/) but it is not limited to. Anyone can use this program to have your original livestreaming schedule calendar from any Twitter lists.
+
 ## Install
 
 The required gems needed to be installed. Gemfile is included in this repository.
@@ -12,19 +14,19 @@ Required parameters are:
  - List of Twitter Lists
  - API Key for YouTube Data API v3
  - Google Calendar ID
- - The path of client secret for a Service Account which has full access for above Google Calendar.
+ - Path of client secret for a Service Account with full access to the Google Calendar.
 
 ## Usage
 
-Then you can execute `update`, `update_by_tweets` or `update_registered` command that works as below. It's recommended to register them to crontab or any periodical execution mechanism.
+You can execute `update`, `update_by_tweets` or `update_registered` command that works as below. It's recommended to register them to cron or any periodical execution mechanism.
  - `update_by_tweets` command checks the tweets from Twitter list and register tweeted livestreams.
- - `update_registered` command checks already registered events in Google Calendar and reflects the changes of the livestream.
+ - `update_registered` command checks registered events in Google Calendar and update the change of existing livestreams.
  - `update` command runs both above actions in sequence.
 
 ## Web Frontend
 
-Simple web frontend is located on webapp dir.
-You can check the schedules by web browsers.
+Simple web front-end is located on webapp dir that is used in [星チルカレンダー](https://kazubu.jp/slcc/).
+You can provide web-based calendar view.
 
 Apache + Passenger example:
 
