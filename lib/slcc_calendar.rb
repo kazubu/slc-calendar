@@ -95,7 +95,9 @@ module SLCCalendar
                                                                        'live_url' => live_url,
                                                                        'on_live' => (on_live ? 'true' : 'false'),
                                                                        'channel_name' => schedule.video.channel_title,
-                                                                       'video_title' => schedule.video.video_title
+                                                                       'channel_id' => schedule.video.channel_id,
+                                                                       'video_title' => schedule.video.video_title,
+                                                                       'video_id' => schedule.video.video_id
                                                                      }
                                                                    })
 
