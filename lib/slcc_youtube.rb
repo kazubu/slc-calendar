@@ -66,10 +66,16 @@ module SLCCalendar
         thumbnails.first[1]['url']
       end
 
-      def upcoming_stream?
-        return true if @live_state == 'upcoming' || @live_state == 'live'
+      def upcoming_or_on_live?
+        upcoming_stream? || on_live?
+      end
 
-        false
+      def upcoming_stream?
+        @live_state == 'upcoming'
+      end
+
+      def on_live?
+        @live_state == 'live'
       end
 
       def live?

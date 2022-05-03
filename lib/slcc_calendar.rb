@@ -84,9 +84,9 @@ module SLCCalendar
       end
 
       thumbnail_url = schedule.video.thumbnail_url
-      live_ended = !schedule.video.upcoming_stream?
+      live_ended = !schedule.video.upcoming_or_on_live?
       live_url = schedule.video.video_url
-      on_live = schedule.video.live_state == 'live'
+      on_live = schedule.video.on_live?
       ep = Google::Apis::CalendarV3::Event::ExtendedProperties.new({
                                                                      shared: {
                                                                        'tweet_url' => tweet_url,

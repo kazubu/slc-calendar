@@ -138,7 +138,7 @@ module SLCCalendar
           $logger.info "ENDED: #{calendar.event_summary(calendar.update_event(e[:event]))}"
           ended_count += 1
           next
-        elsif !video.upcoming_stream?
+        elsif !video.upcoming_or_on_live?
           # live is finished. generate new event
           $logger.info "ENDED: #{calendar.event_summary(calendar.update(e[:event].id, sc))}"
           ended_count += 1
