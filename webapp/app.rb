@@ -16,6 +16,7 @@ def event2hash(e)
   if e&.extended_properties&.shared
     hash[:tweet_url] = e.extended_properties.shared['tweet_url'] if e.extended_properties.shared['tweet_url']
     hash[:channel_name] = e.extended_properties.shared['channel_name'] if e.extended_properties.shared['channel_name']
+    hash[:channel_id] = e.extended_properties.shared['channel_id'] if e.extended_properties.shared['channel_id']
     hash[:video_title] = e.extended_properties.shared['video_title'] if e.extended_properties.shared['video_title']
     hash[:live_url] = e.extended_properties.shared['live_url'] if e.extended_properties.shared['live_url']
     hash[:thumbnail_url] = e.extended_properties.shared['thumbnail_url'] if e.extended_properties.shared['thumbnail_url']
