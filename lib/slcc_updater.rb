@@ -229,21 +229,25 @@ module SLCCalendar
         twitter_list_members.each{|member|
           full_match = nil
           twn = member[:name].split(/[\/\-@＠‐]/)[0].gsub(/\(.+\)/,'').gsub(' ', '').trunc(16)
-          distance = DamerauLevenshtein.distance(name, twn)
-          allowed_distance = max_distance
-          if name.length - 2 <= max_distance
-            allowed_distance = name.length - 2
+          if twn.length <= name.length
+            full_match = twn if twn == name[0...twn.length]
+          else
+            full_match = twn if twn[0...name.length] == name
           end
 
-          if distance <= allowed_distance
-            distances << [twn, distance] if distance <= allowed_distance
+          if full_match
+            distances << [full_match, -1]
+            break
           else
-            if twn.length <= name.length
-              full_match = twn if twn == name[0...twn.length]
-            else
-              full_match = name if twn[0...name.length] == name
+            distance = DamerauLevenshtein.distance(name, twn)
+            allowed_distance = max_distance
+            if name.length - 2 <= max_distance
+              allowed_distance = name.length - 2
             end
-            distances << [full_match, -1] if full_match
+
+            if distance <= allowed_distance
+              distances << [twn, distance] if distance <= allowed_distance
+            end
           end
         }
         distances.sort{|a, b| a[1] <=> b[1]}.each{|x|
