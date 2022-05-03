@@ -90,7 +90,15 @@ $(function() {
         html += `<p class="video_title">${this.video_title}</p>`;
         html += '</a>';
 
-        html += `<div class="channel_name">${this.channel_name}</div>`;
+        html += '<div class="channel_name">';
+        if(this.channel_id) {
+          html += `<a style="text-decoration:none" href="https://www.youtube.com/channel/${this.channel_id}" target="_blank" rel="noopener">`;
+          html += `${this.channel_name}`;
+          html += '</a>';
+        } else {
+          html += `${this.channel_name}`;
+        }
+        html += '</div>';
         html += '</li>';
 
         const date = dateToDateStr(new Date(this.start_date));
