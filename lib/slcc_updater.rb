@@ -208,10 +208,6 @@ module SLCCalendar
         end
       end
 
-      #channels.sort_by{|_, v| v[:count]}.reverse.to_h.each{|k, v|
-      #  puts ("id: #{k}, channel_name: #{v[:name]}, count: #{v[:count]}")
-      #}
-
       twitter_list_members = []
 
       TWITTER_LISTS.each do |x|
@@ -222,10 +218,16 @@ module SLCCalendar
 
       channels.each{|k, v|
         name = v[:name].split(/Ch\.|ちゃんねる|Channel|channel/)[0].split(/[\/\-@＠‐]/)[0].gsub(' ', '').trunc(12)
-        puts "channel name: #{name}"
+
+        # if count is greater than 3, it will be checked.
+        if v[:count] > 3
+          channels[k][:need_check] = true
+          next
+        end
+
+        # if count is less than 3, check twitter lists.
         distances = []
         max_distance = 4
-
         twitter_list_members.each{|member|
           full_match = nil
           twn = member[:name].split(/[\/\-@＠‐]/)[0].gsub(/\(.+\)/,'').gsub(' ', '').trunc(16)
@@ -250,9 +252,16 @@ module SLCCalendar
             end
           end
         }
-        distances.sort{|a, b| a[1] <=> b[1]}.each{|x|
-          puts " twitter name: #{x[0]}, distance: #{x[1]}"
-        }
+
+        if distances.length > 0
+          channels[k][:need_check] = true
+        else
+          channels[k][:need_check] = false
+        end
+      }
+
+      channels.each{|id, v|
+        pp v
       }
 
     end
