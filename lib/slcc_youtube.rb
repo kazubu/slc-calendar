@@ -116,7 +116,7 @@ module SLCCalendar
 
       playlist_items = api_get(
         resource: 'playlistItems',
-        options: { part: 'snippet', playlistId: playlist_id }
+        options: { part: 'snippet', maxResults: 50, playlistId: playlist_id }
       )
 
       return nil if playlist_items.nil? || playlist_items['items'].nil? || playlist_items['items'].length == 0
@@ -128,6 +128,17 @@ module SLCCalendar
       }
 
       get_videos(video_ids)
+    end
+
+    def get_playlist_id_by_channel_id(channel_id)
+      channel = api_get(
+        resource: 'channels',
+        options: {part: 'contentDetails', id: channel_id}
+      )
+
+      return nil if channel['items'].nil? || channel['items'].length == 0 || channel['items'][0]['contentDetails'].nil? || channel['items'][0]['contentDetails']['relatedPlaylists'].nil?
+
+      channel['items'][0]['contentDetails']['relatedPlaylists']['uploads']
     end
 
     private
