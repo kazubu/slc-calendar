@@ -115,12 +115,24 @@ module SLCCalendar
     end
 
     def events(past = 7, future = 120)
-      events = @service.list_events(@calendar_id,
-                                    max_results: 2500,
-                                    time_min: (Time.now - past * 24 * 60 * 60).iso8601,
-                                    time_max: (Time.now + future * 24 * 60 * 60).iso8601)
+      page_token = nil
+      items = []
 
-      events.items
+      time_min = (Time.now - ( past * 24 * 60 * 60 )).iso8601
+      time_max = (Time.now + ( future * 24 * 60 * 60 )).iso8601
+
+      begin
+        events = @service.list_events(@calendar_id,
+                                      max_results: 2500,
+                                      time_min: time_min,
+                                      time_max: time_max )
+        #events.items.each{|x| items << x }
+        items += events.items
+
+        page_token = events.next_page_token ? events.next_page_token : nil
+      end while !page_token.nil?
+
+      items
     end
 
     def create(schedule)
