@@ -260,10 +260,45 @@ module SLCCalendar
         end
       }
 
-      channels.each{|id, v|
-        pp v
-      }
+      videos = []
+      channels.each do|id, v|
+        if v[:need_check]
+          puts "checking #{v[:name]}"
+          _videos = @youtube.get_playlist_videos(@youtube.get_playlist_id_by_channel_id(id))
 
+          next if _videos.nil? || _videos.length == 0
+
+          _videos.each do |v|
+            next unless v.live? && v.upcoming_or_on_live?
+
+            puts 'upcoming livestream is detected: ' + v.video_title
+            event_id = nil
+            current_events.each do |ev|
+              event_id = ev.id if ev.description.index(v.video_id)
+            end
+
+            if event_id.nil?
+              puts '  new event! ' + v.video_id
+              if v.scheduled_start_time && (v.scheduled_start_time - Time.now) > 7 * 24 * 60 * 60
+                puts '  over +7 days to start. skip!'
+                next
+              elsif v.scheduled_start_time && (v.scheduled_start_time - Time.now) < 0
+                puts '  The schedule is the past. skip!'
+                next
+              elsif v.scheduled_start_time.nil?
+                puts '  Start time is not set. skip!'
+                next
+              end
+              videos << v
+            end
+          end
+        end
+      end
+
+      videos.each{|v|
+        sc = Schedule.new(video: v, tweet: nil)
+        $logger.info "CREATE: #{calendar.event_summary(calendar.gen_event(sc))}" # TBD
+      }
     end
 
     def force_register(video_id)
