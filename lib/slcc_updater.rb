@@ -192,7 +192,7 @@ module SLCCalendar
       )
 
       calendar = SLCCalendar::Calendar.new
-      current_events = calendar.events(10, 120)
+      current_events = calendar.events(14, 120)
       puts current_events.count
 
       channels = {}
@@ -282,7 +282,7 @@ module SLCCalendar
               if v.scheduled_start_time && (v.scheduled_start_time - Time.now) > 7 * 24 * 60 * 60
                 puts '  over +7 days to start. skip!'
                 next
-              elsif v.scheduled_start_time && (v.scheduled_start_time - Time.now) < 0
+              elsif v.scheduled_start_time && v.upcoming_stream? && (v.scheduled_start_time - Time.now) < 0
                 puts '  The schedule is the past. skip!'
                 next
               elsif v.scheduled_start_time.nil?
