@@ -76,6 +76,10 @@ module SLCCalendar
                    start_time + Rational(1, 24)
                  end
 
+      if schedule.video.on_live? && (DateTime.now - end_time) > 0
+        end_time = DateTime.now + Rational(10, 24*60)
+      end
+
       tweet_url = ''
       if schedule.tweet.is_a?(String)
         tweet_url = schedule.tweet
