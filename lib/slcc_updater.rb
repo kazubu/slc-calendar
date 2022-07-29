@@ -306,7 +306,7 @@ module SLCCalendar
 
       videos.each{|v|
         sc = Schedule.new(video: v, tweet: nil)
-        $logger.info "CREATE: #{calendar.event_summary(calendar.gen_event(sc))}" # TBD
+        $logger.info "CREATE: #{calendar.event_summary(calendar.create(sc))}"
       }
     end
 
