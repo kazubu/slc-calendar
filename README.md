@@ -22,6 +22,7 @@ You can execute `update`, `update_by_tweets` or `update_registered` command that
  - `update_by_tweets` command checks the tweets from Twitter list and register tweeted livestreams.
  - `update_registered` command checks registered events in Google Calendar and update the change of existing livestreams.
  - `update` command runs both above actions in sequence.
+ - `update_known_channel_videos` commands checks channel information of livestreams registered in the past and register upcoming livestreams in channels.
 
 ## Web Frontend
 
