@@ -193,7 +193,7 @@ module SLCCalendar
 
       calendar = SLCCalendar::Calendar.new
       current_events = calendar.events(14, 120)
-      puts current_events.count
+      $logger.info "Existing events: #{current_events.count}"
 
       channels = {}
 
@@ -208,6 +208,8 @@ module SLCCalendar
         end
       end
 
+      $logger.info "Channels: #{channels.count}"
+
       twitter_list_members = []
 
       TWITTER_LISTS.each do |x|
@@ -216,8 +218,12 @@ module SLCCalendar
         twitter_list_members += collector.get_list_members(user_id, list_id)
       end
 
+      $logger.info "Twitter list members: #{twitter_list_members.count}"
+
+      $logger.info "Checking channel is needed to check or not..."
       channels.each{|k, v|
-        name = v[:name].split(/Ch\.|ちゃんねる|Channel|channel/)[0].split(/[\/\-@＠‐]/)[0].gsub(' ', '').trunc(12)
+        $logger.info "Channel: #{v[:name]}, Count: #{v[:count]}"
+        name = v[:name].split(/Ch\.|ちゃんねる|Channel|channel/).delete_if{|x| x == '' }[0].split(/[\/\-@＠‐]/).delete_if{|x| x == '' }[0].gsub(' ', '').trunc(12)
 
         # if count is greater than 3, it will be checked.
         if v[:count] > 3
@@ -238,6 +244,7 @@ module SLCCalendar
           end
 
           if full_match
+            $logger.info "Twitter name match: #{twn}"
             distances << [full_match, -1]
             break
           else
@@ -248,7 +255,8 @@ module SLCCalendar
             end
 
             if distance <= allowed_distance
-              distances << [twn, distance] if distance <= allowed_distance
+              $logger.info "Twitter name is similar to: #{twn}"
+              distances << [twn, distance]
             end
           end
         }
@@ -260,10 +268,11 @@ module SLCCalendar
         end
       }
 
+      $logger.info "Checking upcoming livestreams from channels..."
       videos = []
       channels.each do|id, v|
         if v[:need_check]
-          puts "checking #{v[:name]}"
+          $logger.info "Channel: #{v[:name]}"
           _videos = @youtube.get_playlist_videos(@youtube.get_playlist_id_by_channel_id(id))
 
           next if _videos.nil? || _videos.length == 0
@@ -271,22 +280,22 @@ module SLCCalendar
           _videos.each do |v|
             next unless v.live? && v.upcoming_or_on_live?
 
-            puts 'upcoming livestream is detected: ' + v.video_title
+            $logger.info "#{v.video_id}: upcoming livestream is detected: #{v.video_title}"
             event_id = nil
             current_events.each do |ev|
               event_id = ev.id if ev.description.index(v.video_id)
             end
 
             if event_id.nil?
-              puts '  new event! ' + v.video_id
+              $logger.info "#{v.video_id}: new event"
               if v.scheduled_start_time && (v.scheduled_start_time - Time.now) > 7 * 24 * 60 * 60
-                puts '  over +7 days to start. skip!'
+                $logger.info "#{v.video_id}: over +7 days to start. skip!"
                 next
               elsif v.scheduled_start_time && v.upcoming_stream? && (v.scheduled_start_time - Time.now) < 0
-                puts '  The schedule is the past. skip!'
+                $logger.info "#{v.video_id}: The schedule is the past. skip!"
                 next
               elsif v.scheduled_start_time.nil?
-                puts '  Start time is not set. skip!'
+                $logger.info "#{v.video_id}: Start time is not set. skip!"
                 next
               end
               videos << v
