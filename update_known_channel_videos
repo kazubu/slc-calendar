@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative 'lib/slcc_updater'
+
+puts "Process Start: #{Time.now}"
+
+puts '# Update known channel schedules'
+SLCCalendar::Updater.new.update_known_channel_videos
+
+puts "Process Finished: #{Time.now}"
