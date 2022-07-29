@@ -2,6 +2,7 @@
 
 source 'https://rubygems.org'
 
+gem 'damerau-levenshtein'
 gem 'google-apis-calendar_v3'
 gem 'googleauth'
 gem 'nkf'

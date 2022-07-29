@@ -111,6 +111,36 @@ module SLCCalendar
       videos
     end
 
+    def get_playlist_videos(playlist_id)
+      video_ids = []
+
+      playlist_items = api_get(
+        resource: 'playlistItems',
+        options: { part: 'snippet', maxResults: 50, playlistId: playlist_id }
+      )
+
+      return nil if playlist_items.nil? || playlist_items['items'].nil? || playlist_items['items'].length == 0
+
+      playlist_items['items'].each{|v|
+        next if v['snippet'].nil?
+
+        video_ids << v['snippet']['resourceId']['videoId']
+      }
+
+      get_videos(video_ids)
+    end
+
+    def get_playlist_id_by_channel_id(channel_id)
+      channel = api_get(
+        resource: 'channels',
+        options: {part: 'contentDetails', id: channel_id}
+      )
+
+      return nil if channel['items'].nil? || channel['items'].length == 0 || channel['items'][0]['contentDetails'].nil? || channel['items'][0]['contentDetails']['relatedPlaylists'].nil?
+
+      channel['items'][0]['contentDetails']['relatedPlaylists']['uploads']
+    end
+
     private
 
     def video_id_array_to_video_ids(video_id_array)

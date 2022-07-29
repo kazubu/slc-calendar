@@ -45,6 +45,21 @@ module SLCCalendar
       @youtube_data_api_key = youtube_data_api_key
     end
 
+    def get_list_members(twitter_id, list_id)
+      client = Twitter::REST::Client.new do |config|
+        config.consumer_key = @twitter_consumer_key
+        config.consumer_secret = @twitter_consumer_secret
+        config.bearer_token = @twitter_bearer_token
+      end
+
+      members = []
+      client.list_members(twitter_id, list_id, {count: 5000, skip_status: true, include_entities: false}).each{|m|
+        members << {name: m.name.to_s, screen_name: m.screen_name.to_s, id: m.id.to_s}
+      }
+
+      return members
+    end
+
     def get_schedules(twitter_id, list_id, since_id: nil, include_ended: false)
       announces, latest_id = collect_announces(twitter_id, list_id, since_id: since_id)
       @latest_tweet_id = latest_id

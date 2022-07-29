@@ -2,12 +2,32 @@
 # frozen_string_literal: true
 
 require 'logger'
+require 'damerau-levenshtein'
 
 require_relative '../config'
 require_relative './slcc_schedule_collector'
 require_relative './slcc_calendar'
 
 $logger = Logger.new($stdout)
+class String
+  def trunc(trunc_at, om = "")
+    om_size = (om.bytesize - om.size) / 2 + om.size
+    if size == bytesize
+      return size <= trunc_at ? self : "#{self[0, trunc_at - om_size]}#{om}"
+    end
+    return self if (self.bytesize - self.size) / 2 + self.size <= trunc_at
+    size.times do |i|
+      str_size = (self[0..i].bytesize - self[0..i].size) / 2 + self[0..i].size
+      case
+      when str_size <  trunc_at - om_size; next
+      when str_size == trunc_at - om_size; return "#{self[0..i]}#{om}"
+      else;                                return "#{self[0..(i - 1)]}#{om}"
+      end
+    end
+    return self
+  end
+end
+
 
 module SLCCalendar
   class Updater
@@ -86,14 +106,14 @@ module SLCCalendar
     end
 
     # 配信URLをチェックして時間だけアップデートする
-    def update_registered_events(force: false)
+    def update_registered_events(force: false, past: 2, future: 120)
       update_count = 0
       skip_count = 0
       ended_count = 0
 
       calendar = SLCCalendar::Calendar.new
 
-      current_events = calendar.events(2, 120)
+      current_events = calendar.events(past, future)
       $logger.info "#{current_events.count} events are found on Calendar."
 
       events = []
@@ -157,6 +177,137 @@ module SLCCalendar
       end
 
       $logger.info "#{update_count} updated; #{skip_count} skipped; #{ended_count} ended;"
+    end
+
+    def update_known_channel_videos()
+      update_count = 0
+      skip_count = 0
+      ended_count = 0
+
+      collector = SLCCalendar::ScheduleCollector.new(
+        twitter_consumer_key: TWITTER_CONSUMER_KEY,
+        twitter_consumer_secret: TWITTER_CONSUMER_SECRET,
+        twitter_bearer_token: TWITTER_BEARER_TOKEN,
+        youtube_data_api_key: YOUTUBE_DATA_API_KEY
+      )
+
+      calendar = SLCCalendar::Calendar.new
+      current_events = calendar.events(14, 120)
+      $logger.info "Existing events: #{current_events.count}"
+
+      channels = {}
+
+      current_events.each do |e|
+        if e&.extended_properties&.shared && e.extended_properties.shared['channel_id']
+          channel_id = e.extended_properties.shared['channel_id']
+          if channels.find{|k,v| k == channel_id}
+            channels[channel_id][:count] += 1
+          else
+            channels[channel_id] = {count: 1, name: e.extended_properties.shared['channel_name'] }
+          end
+        end
+      end
+
+      $logger.info "Channels: #{channels.count}"
+
+      twitter_list_members = []
+
+      TWITTER_LISTS.each do |x|
+        user_id = x[0]
+        list_id = x[1]
+        twitter_list_members += collector.get_list_members(user_id, list_id)
+      end
+
+      $logger.info "Twitter list members: #{twitter_list_members.count}"
+
+      $logger.info "Checking channel is needed to check or not..."
+      channels.each{|k, v|
+        $logger.info "Channel: #{v[:name]}, Count: #{v[:count]}"
+        name = v[:name].split(/Ch\.|ちゃんねる|Channel|channel/).delete_if{|x| x == '' }[0].split(/[\/\-@＠‐]/).delete_if{|x| x == '' }[0].gsub(' ', '').trunc(12)
+
+        # if count is greater than 3, it will be checked.
+        if v[:count] > 3
+          channels[k][:need_check] = true
+          next
+        end
+
+        # if count is less than 3, check twitter lists.
+        distances = []
+        max_distance = 4
+        twitter_list_members.each{|member|
+          full_match = nil
+          twn = member[:name].split(/[\/\-@＠‐]/)[0].gsub(/\(.+\)/,'').gsub(' ', '').trunc(16)
+          if twn.length <= name.length
+            full_match = twn if twn == name[0...twn.length]
+          else
+            full_match = twn if twn[0...name.length] == name
+          end
+
+          if full_match
+            $logger.info "Twitter name match: #{twn}"
+            distances << [full_match, -1]
+            break
+          else
+            distance = DamerauLevenshtein.distance(name, twn)
+            allowed_distance = max_distance
+            if name.length - 2 <= max_distance
+              allowed_distance = name.length - 2
+            end
+
+            if distance <= allowed_distance
+              $logger.info "Twitter name is similar to: #{twn}"
+              distances << [twn, distance]
+            end
+          end
+        }
+
+        if distances.length > 0
+          channels[k][:need_check] = true
+        else
+          channels[k][:need_check] = false
+        end
+      }
+
+      $logger.info "Checking upcoming livestreams from channels..."
+      videos = []
+      channels.each do|id, v|
+        if v[:need_check]
+          $logger.info "Channel: #{v[:name]}"
+          _videos = @youtube.get_playlist_videos(@youtube.get_playlist_id_by_channel_id(id))
+
+          next if _videos.nil? || _videos.length == 0
+
+          _videos.each do |v|
+            next unless v.live? && v.upcoming_or_on_live?
+
+            $logger.info "#{v.video_id}: upcoming livestream is detected: #{v.video_title}"
+            event_id = nil
+            current_events.each do |ev|
+              event_id = ev.id if ev.description.index(v.video_id)
+            end
+
+            if event_id.nil?
+              $logger.info "#{v.video_id}: new event"
+              if v.scheduled_start_time && (v.scheduled_start_time - Time.now) > 7 * 24 * 60 * 60
+                $logger.info "#{v.video_id}: over +7 days to start. skip!"
+                next
+              elsif v.scheduled_start_time && v.upcoming_stream? && (v.scheduled_start_time - Time.now) < 0
+                $logger.info "#{v.video_id}: The schedule is the past. skip!"
+                next
+              elsif v.scheduled_start_time.nil?
+                $logger.info "#{v.video_id}: Start time is not set. skip!"
+                next
+              end
+              videos << v
+            end
+          end
+        end
+      end
+
+      videos.each{|v|
+        sc = Schedule.new(video: v, tweet: nil)
+        $logger.info "CREATE: #{calendar.event_summary(calendar.create(sc))}"
+      }
     end
 
     def force_register(video_id)
