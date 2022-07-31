@@ -106,7 +106,7 @@ module SLCCalendar
     end
 
     # 配信URLをチェックして時間だけアップデートする
-    def update_registered_events(force: false, past: 2, future: 120)
+    def update_registered_events(force: false, past: 2, future: 3650)
       update_count = 0
       skip_count = 0
       ended_count = 0
