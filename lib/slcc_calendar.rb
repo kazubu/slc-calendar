@@ -64,7 +64,7 @@ module SLCCalendar
       description = gen_description(schedule)
 
       start_time = DateTime.parse(schedule.video.scheduled_start_time.to_s) if schedule.video.scheduled_start_time
-      if start_time.nil? || (schedule.video.actual_start_time && (schedule.video.actual_start_time - schedule.video.scheduled_start_time).floor.abs > 600)
+      if start_time.nil? || (schedule.video.actual_start_time && (schedule.video.actual_start_time < schedule.video.scheduled_start_time || ( schedule.video.actual_start_time - schedule.video.scheduled_start_time).floor.abs > 600))
         start_time = DateTime.parse(schedule.video.actual_start_time.to_s)
       end
 
