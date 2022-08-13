@@ -73,7 +73,18 @@ $(function() {
         return Date.parse(a.start_date) - Date.parse(b.start_date);
       });
 
+      var keyword = '';
+      params = new URLSearchParams(window.location.search)
+
+      if(params.has('q')){
+        keyword = params.get('q');
+      }
+
       $.each(events, function(){
+        if(keyword.length > 0 && !this.channel_name.includes(keyword)){
+          return true;
+        }
+
         let html = '<li class="list-group-item event col-xs-6 col-sm-4 col-md-4 col-lg-3 col-xl-3">';
         html += `<div class="video_date">${dateToDateTimeStr(new Date(this.start_date))}～</div>`;
 
