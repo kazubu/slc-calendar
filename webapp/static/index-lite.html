@@ -81,7 +81,7 @@ $(function() {
       }
 
       $.each(events, function(){
-        if(keyword.length > 0 && !this.channel_name.includes(keyword)){
+        if(keyword.length > 0 && !(this.channel_name.includes(keyword) || this.video_title.includes(keyword))){
           return true;
         }
 
@@ -227,24 +227,36 @@ body {
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1616178995872166" crossorigin="anonymous"></script>
   </head>
   <body>
-    <nav class="navbar navbar-dark fixed-top bg-dark">
-      <div class="container-fluid">
-        <div class="nav-item col-1 dropdown align-self-left">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <nav class="navbar navbar-dark fixed-top bg-dark d-flex justify-content-between">
+      <div class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
           <span class="navbar-toggler-icon"></span>
-          </a>
-          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <li><a class="dropdown-item" href="./">サムネイルあり</a></li>
-            <li><a class="dropdown-item" href="./index-lite.html">サムネイルなし</a></li>
-            <li><a class="dropdown-item" href="./index-google.html">Googleカレンダー版</a></li>
-          </ul>
-        </div>
-        <div class="navbar-brand col-6 align-self-center"><a href="" id="header_link">星チルカレンダー</a></div>
-        <div class="nav-item col-1 align-self-right">
-          <a href="">
-            <i class="bi bi-arrow-clockwise" style="color: gray"></i>
-          </a>
-        </div>
+        </a>
+        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+          <li>
+            <div class="dropdown-item">
+              <form method="get" name="search" class="form-inline form-group">
+                <div class="input-group">
+                <input type="search" class="form-control" id="q" name="q"/ placeholder="Search">
+                <a class="input-group-text" href="javascript:search.submit()">
+                  <i class="bi bi-search" style="color: gray"></i>
+                </a>
+                </div>
+              </form>
+            </div>
+          </li>
+          <li><a class="dropdown-item" href="./">サムネイルあり</a></li>
+          <li><a class="dropdown-item" href="./index-lite.html">サムネイルなし</a></li>
+          <li><a class="dropdown-item" href="./index-google.html">Googleカレンダー版</a></li>
+        </ul>
+      </div>
+      <div class="navbar-brand">
+        <a href="" id="header_link">星チルカレンダー</a>
+      </div>
+      <div class="nav-item">
+        <a href="">
+          <i class="bi bi-arrow-clockwise" style="color: gray; margin: auto 1em;"></i>
+        </a>
       </div>
     </nav>
 
