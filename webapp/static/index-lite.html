@@ -54,6 +54,16 @@ $(function() {
     return html;
   }
 
+  function check_keywords(text, keywords) {
+    var kws = keywords.split(/\s+/);
+    for(kw in kws){
+      if(text.includes(kws[kw])){
+        return true;
+      }
+    }
+    return false;
+  }
+
   $.ajax({
     url: "./events",
     success: function( result ){
@@ -81,7 +91,7 @@ $(function() {
       }
 
       $.each(events, function(){
-        if(keyword.length > 0 && !(this.channel_name.includes(keyword) || this.video_title.includes(keyword))){
+        if(keyword.length > 0 && !(check_keywords(this.channel_name, keyword) || check_keywords(this.video_title, keyword))){
           return true;
         }
 
