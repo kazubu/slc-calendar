@@ -91,31 +91,29 @@ module SLCCalendar
       live_ended = !schedule.video.upcoming_or_on_live?
       live_url = schedule.video.video_url
       on_live = schedule.video.on_live?
-      ep = Google::Apis::CalendarV3::Event::ExtendedProperties.new({
-                                                                     shared: {
-                                                                       'tweet_url' => tweet_url,
-                                                                       'thumbnail_url' => thumbnail_url,
-                                                                       'live_ended' => (live_ended ? 'true' : 'false'),
-                                                                       'live_url' => live_url,
-                                                                       'on_live' => (on_live ? 'true' : 'false'),
-                                                                       'channel_name' => schedule.video.channel_title,
-                                                                       'channel_id' => schedule.video.channel_id,
-                                                                       'video_title' => schedule.video.video_title,
-                                                                       'video_id' => schedule.video.video_id
-                                                                     }
-                                                                   })
+      ep = Google::Apis::CalendarV3::Event::ExtendedProperties.new(shared: {
+        'tweet_url' => tweet_url,
+        'thumbnail_url' => thumbnail_url,
+        'live_ended' => (live_ended ? 'true' : 'false'),
+        'live_url' => live_url,
+        'on_live' => (on_live ? 'true' : 'false'),
+        'channel_name' => schedule.video.channel_title,
+        'channel_id' => schedule.video.channel_id,
+        'video_title' => schedule.video.video_title,
+        'video_id' => schedule.video.video_id
+      })
 
-      Google::Apis::CalendarV3::Event.new({
-                                            summary: title,
-                                            description: description,
-                                            start: Google::Apis::CalendarV3::EventDateTime.new(
-                                              date_time: start_time
-                                            ),
-                                            extended_properties: ep,
-                                            end: Google::Apis::CalendarV3::EventDateTime.new(
-                                              date_time: end_time
-                                            )
-                                          })
+      Google::Apis::CalendarV3::Event.new(
+        summary: title,
+        description: description,
+        start: Google::Apis::CalendarV3::EventDateTime.new(
+          date_time: start_time
+        ),
+        extended_properties: ep,
+        end: Google::Apis::CalendarV3::EventDateTime.new(
+          date_time: end_time
+        )
+      )
     end
 
     def events(past = 7, future = 120)
