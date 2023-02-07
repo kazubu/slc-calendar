@@ -22,7 +22,11 @@ module SLCCalendar
 
       def url_to_video_id(url)
         if url.index('http') == 0
-          url.split('v=')[1].split('&')[0]
+          if url.index('v=')
+            url.split('v=')[1].split('&')[0]
+          elsif url.index('/live/')
+            url.split('/live/')[1].split('?')[0]
+          end
         else
           url
         end

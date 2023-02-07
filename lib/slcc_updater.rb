@@ -35,7 +35,7 @@ module SLCCalendar
       @youtube = YouTube.new(api_key: YOUTUBE_DATA_API_KEY)
     end
 
-    def update_by_tweets
+    def update_by_tweets(include_ended: false)
       create_count = 0
       update_count = 0
       skip_count = 0
@@ -60,9 +60,9 @@ module SLCCalendar
         user_id = x[0]
         list_id = x[1]
         schedules += if latest_id_list[list_id.to_s]
-                       collector.get_schedules(user_id, list_id, since_id: latest_id_list[list_id.to_s].to_i)
+                       collector.get_schedules(user_id, list_id, since_id: latest_id_list[list_id.to_s].to_i, include_ended: include_ended)
                      else
-                       collector.get_schedules(user_id, list_id)
+                       collector.get_schedules(user_id, list_id, include_ended: include_ended)
                      end
         latest_id_list[list_id.to_s] = collector.latest_tweet_id if collector.latest_tweet_id
       end

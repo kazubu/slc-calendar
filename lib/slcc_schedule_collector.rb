@@ -91,7 +91,7 @@ module SLCCalendar
         youtube_url_lists.each do |y|
           if u.expanded_url.to_s.index(y)
             e_url = Utils.expand_url(u.expanded_url.to_s)
-            ids << YouTube::Utils.url_to_video_id(e_url) if e_url.index('watch')
+            ids << YouTube::Utils.url_to_video_id(e_url) if e_url.index('watch') or e_url.index('live')
           end
         end
       end
