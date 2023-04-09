@@ -16,6 +16,8 @@ module SLCCalendar
     end
 
     def event_summary(event)
+      return "nil" if event.nil?
+
       s = "summary: #{event.summary},"
       s += " calendar_id: #{event.id},"
       s += " start_time: #{event.start.date_time},"
@@ -64,7 +66,7 @@ module SLCCalendar
       description = gen_description(schedule)
 
       start_time = DateTime.parse(schedule.video.scheduled_start_time.to_s) if schedule.video.scheduled_start_time
-      if start_time.nil? || (schedule.video.actual_start_time && (schedule.video.actual_start_time < schedule.video.scheduled_start_time || ( schedule.video.actual_start_time - schedule.video.scheduled_start_time).floor.abs > 600))
+      if (start_time.nil? && schedule.video.actual_start_time ) || (schedule.video.actual_start_time && (schedule.video.actual_start_time < schedule.video.scheduled_start_time || ( schedule.video.actual_start_time - schedule.video.scheduled_start_time).floor.abs > 600))
         start_time = DateTime.parse(schedule.video.actual_start_time.to_s)
       end
 
@@ -140,7 +142,12 @@ module SLCCalendar
     def create(schedule)
       return if schedule.nil?
 
-      event = gen_event(schedule)
+      begin
+        event = gen_event(schedule)
+      rescue
+        $logger.error "event is not generated. skipping..."
+        return nil
+      end
       @service.insert_event(
         @calendar_id,
         event
@@ -150,7 +157,12 @@ module SLCCalendar
     def update(event_id, schedule)
       return if schedule.nil?
 
-      event = gen_event(schedule)
+      begin
+        event = gen_event(schedule)
+      rescue
+        $logger.error "event is not generated. skipping..."
+        return nil
+      end
       @service.update_event(
         @calendar_id,
         event_id,
