@@ -56,15 +56,22 @@ module SLCCalendar
       end
 
       schedules = []
-      TWITTER_LISTS.each do |x|
-        user_id = x[0]
-        list_id = x[1]
-        schedules += if latest_id_list[list_id.to_s]
-                       collector.get_schedules(user_id, list_id, since_id: latest_id_list[list_id.to_s].to_i, include_ended: include_ended)
-                     else
-                       collector.get_schedules(user_id, list_id, include_ended: include_ended)
-                     end
-        latest_id_list[list_id.to_s] = collector.latest_tweet_id if collector.latest_tweet_id
+      begin
+        TWITTER_LISTS.each do |x|
+          user_id = x[0]
+          list_id = x[1]
+          schedules += if latest_id_list[list_id.to_s]
+                         collector.get_schedules(user_id, list_id, since_id: latest_id_list[list_id.to_s].to_i, include_ended: include_ended)
+                       else
+                         collector.get_schedules(user_id, list_id, include_ended: include_ended)
+                       end
+          latest_id_list[list_id.to_s] = collector.latest_tweet_id if collector.latest_tweet_id
+        end
+      rescue => e
+        $logger.error "Error during retrieving tweets. Skip!!!"
+        $logger.error e.message
+        $logger.error e.backtrace.join("\n")
+        return nil
       end
 
       current_events = calendar.events
