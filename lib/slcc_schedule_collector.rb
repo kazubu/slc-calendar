@@ -54,7 +54,7 @@ module SLCCalendar
 
       members = []
       client.list_members(twitter_id, list_id, {count: 5000, skip_status: true, include_entities: false}).each{|m|
-        members << {name: m.name.to_s, screen_name: m.screen_name.to_s, id: m.id.to_s}
+        members << {name: m.name.to_s, screen_name: m.screen_name.to_s, id: m.id.to_s, attrs: m.attrs}
       }
 
       return members
