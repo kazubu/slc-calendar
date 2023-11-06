@@ -6,6 +6,7 @@ require 'damerau-levenshtein'
 
 require_relative '../config'
 require_relative './slcc_schedule_collector'
+require_relative './slcc_spreadsheet'
 require_relative './slcc_calendar'
 
 $logger = Logger.new($stdout)
@@ -194,7 +195,7 @@ module SLCCalendar
       $logger.info "#{update_count} updated; #{skip_count} skipped; #{ended_count} ended;"
     end
 
-    def update_known_channel_videos()
+    def update_known_channel_videos(include_ended: false)
       update_count = 0
       skip_count = 0
       ended_count = 0
@@ -283,34 +284,72 @@ module SLCCalendar
         end
       }
 
+      # Google Spreadsheet based channel list
+      SLCCalendar::Spreadsheet.new.get_youtube_channels.each{|lc|
+        if channels[lc[:channel]]
+          channels[lc[:channel]][:need_check] = true
+        else
+          channels[lc[:channel]] = {name: lc[:name], need_check: true}
+        end
+      }
+
+
       $logger.info "Checking upcoming livestreams from channels..."
       videos = []
       channels.each do|id, v|
         if v[:need_check]
-          $logger.info "Channel: #{v[:name]}"
-          _videos = @youtube.get_playlist_videos(@youtube.get_playlist_id_by_channel_id(id))
+          ch_hdr = "Channel: #{v[:name]}, Channel ID: #{id}"
+          $logger.info "#{ch_hdr}: Check start"
+          begin
+            _videos = @youtube.get_playlist_videos(@youtube.get_playlist_id_by_channel_id(id))
+          rescue => e
+            $logger.info "#{ch_hdr}: Exception: #{e}"
+            next
+          end
 
           next if _videos.nil? || _videos.length == 0
 
           _videos.each do |v|
-            next unless v.live? && v.upcoming_or_on_live?
+            next unless v.live?
+            unless include_ended
+              next unless v.upcoming_or_on_live?
+            end
 
-            $logger.info "#{v.video_id}: upcoming livestream is detected: #{v.video_title}"
+            vid_hdr = "#{ch_hdr}, Video ID: #{v.video_id}"
+            $logger.info "#{vid_hdr}: upcoming livestream is detected: #{v.video_title}"
             event_id = nil
             current_events.each do |ev|
               event_id = ev.id if ev.description.index(v.video_id)
             end
 
-            if event_id.nil?
-              $logger.info "#{v.video_id}: new event"
+            if event_id.nil? && include_ended
+              $logger.info "#{vid_hdr}: new event"
+              if v.scheduled_start_time
+                $logger.info "#{vid_hdr}: Start time: #{v.scheduled_start_time}, diff = #{Time.now - v.scheduled_start_time}"
+              end
+
               if v.scheduled_start_time && (v.scheduled_start_time - Time.now) > 7 * 24 * 60 * 60
-                $logger.info "#{v.video_id}: over +7 days to start. skip!"
-                next
-              elsif v.scheduled_start_time && v.upcoming_stream? && (v.scheduled_start_time - Time.now) < 0
-                $logger.info "#{v.video_id}: The schedule is the past. skip!"
+                $logger.info "#{vid_hdr}: over +7 days to start. skip!"
                 next
               elsif v.scheduled_start_time.nil?
-                $logger.info "#{v.video_id}: Start time is not set. skip!"
+                $logger.info "#{vid_hdr}: Start time is not set. skip!"
+                next
+              elsif v.scheduled_start_time && (Time.now - v.scheduled_start_time) > (31 * 24 * 60 * 60)
+                $logger.info "#{vid_hdr}: Start time is past than 31 days. skip!"
+                next
+              end
+              $logger.info "#{vid_hdr}: The schedule is the past. However, include_ended is enabled!"
+              videos << v
+            elsif event_id.nil?
+              $logger.info "#{vid_hdr}: new event"
+              if v.scheduled_start_time && (v.scheduled_start_time - Time.now) > 7 * 24 * 60 * 60
+                $logger.info "#{vid_hdr}: over +7 days to start. skip!"
+                next
+              elsif v.scheduled_start_time.nil?
+                $logger.info "#{vid_hdr}: Start time is not set. skip!"
+                next
+              elsif v.scheduled_start_time && v.upcoming_stream? && (v.scheduled_start_time - Time.now) < 0
+                $logger.info "#{vid_hdr}: The schedule is the past. skip!"
                 next
               end
               videos << v

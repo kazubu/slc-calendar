@@ -1,4 +1,6 @@
-APPLICATION_NAME = "SLC_CALENDAR"
+# frozen_string_literal: true
+
+APPLICATION_NAME = 'SLC_CALENDAR'
 TWITTER_CONSUMER_KEY = ''
 TWITTER_CONSUMER_SECRET = ''
 TWITTER_BEARER_TOKEN = ''
@@ -8,6 +10,7 @@ TWITTER_LATEST_ID_STORE = File.expand_path('latest_tweets_id.json', __dir__)
 
 YOUTUBE_DATA_API_KEY = ''
 GOOGLE_CALENDAR_ID = ''
+GOOGLE_SPREADSHEET_ID = ''
+GOOGLE_SPREADSHEET_RANGES = ['星チル!A2:C', '準星チル!A2:C'] # A: name, B: twitter screen_name, C: YouTube channel ID
 GOOGLE_CALENDAR_CLIENT_SECRET_PATH = File.expand_path('secret.json', __dir__)
 TIME_ZONE = 'Japan'
-
